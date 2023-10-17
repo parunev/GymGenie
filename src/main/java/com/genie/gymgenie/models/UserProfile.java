@@ -55,4 +55,7 @@ public class UserProfile extends BaseEntity {
 
     @OneToMany(mappedBy = "userProfile")
     private List<FitnessRegime> fitnessRegimes;
+
+    @OneToMany(mappedBy = "userProfile")
+    private List<DietaryRegime> dietaryRegimes;
 }
