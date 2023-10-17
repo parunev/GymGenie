@@ -62,8 +62,10 @@ public class DietaryRegime extends BaseEntity {
     private MealPreparation mealPreparation;
 
     @ManyToOne
+    @JoinColumn(name = "USER_PROFILE_ID")
     private UserProfile userProfile;
 
     @OneToOne
+    @JoinColumn(name = "FITNESS_REGIME_ID")
     private FitnessRegime fitnessRegime;
 }

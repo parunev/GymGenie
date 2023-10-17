@@ -58,4 +58,8 @@ public class UserProfile extends BaseEntity {
 
     @OneToMany(mappedBy = "userProfile")
     private List<DietaryRegime> dietaryRegimes;
+
+    @ManyToOne
+    @JoinColumn(name = "USER_ID")
+    private User user;
 }

@@ -1,10 +1,7 @@
 package com.genie.gymgenie.models;
 
 import com.genie.gymgenie.models.commons.BaseEntity;
-import jakarta.persistence.AttributeOverride;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 import lombok.*;
 
 @Data
@@ -20,5 +17,6 @@ public class MedicalHistory extends BaseEntity {
     private String description;
 
     @ManyToOne
+    @JoinColumn(name = "USER_PROFILE_ID")
     private UserProfile userProfile;
 }

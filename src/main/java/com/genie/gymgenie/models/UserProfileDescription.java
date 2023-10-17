@@ -73,6 +73,6 @@ public class UserProfileDescription extends BaseEntity {
     private List<String> userDailyDiet;
 
     @ManyToOne
+    @JoinColumn(name = "USER_PROFILE_ID")
     private UserProfile userProfile;
-
 }

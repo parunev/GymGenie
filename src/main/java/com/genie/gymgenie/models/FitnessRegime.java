@@ -50,5 +50,6 @@ public class FitnessRegime extends BaseEntity {
     private List<String> injuryPreventionTips;
 
     @ManyToOne
+    @JoinColumn(name = "USER_PROFILE_ID")
     private UserProfile userProfile;
 }

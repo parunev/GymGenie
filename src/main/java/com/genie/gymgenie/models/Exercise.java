@@ -34,5 +34,6 @@ public class Exercise extends BaseEntity {
     private Integer exerciseRest;
 
     @ManyToOne
+    @JoinColumn(name = "FITNESS_REGIME_ID")
     private FitnessRegime regime;
 }

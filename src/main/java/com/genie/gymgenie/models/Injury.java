@@ -1,10 +1,7 @@
 package com.genie.gymgenie.models;
 
 import com.genie.gymgenie.models.commons.BaseEntity;
-import jakarta.persistence.AttributeOverride;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -25,5 +22,6 @@ public class Injury extends BaseEntity {
     private LocalDate injuryOccurred;
 
     @ManyToOne
+    @JoinColumn(name = "USER_PROFILE_ID")
     private UserProfile userProfile;
 }
