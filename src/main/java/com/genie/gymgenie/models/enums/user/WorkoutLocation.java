@@ -1,15 +1,15 @@
-package com.genie.gymgenie.models.enums;
+package com.genie.gymgenie.models.enums.user;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum EnergyLevels {
+public enum WorkoutLocation {
 
-    HIGH("High"),
-    MODERATE("Moderate"),
-    LOW("Low");
+    GYM("Gym"),
+    OUTDOORS("Outdoors"),
+    HOME("Home");
 
     private final String displayName;
 }

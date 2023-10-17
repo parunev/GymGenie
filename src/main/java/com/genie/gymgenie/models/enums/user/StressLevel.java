@@ -1,4 +1,4 @@
-package com.genie.gymgenie.models.enums;
+package com.genie.gymgenie.models.enums.user;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

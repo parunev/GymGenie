@@ -1,14 +1,15 @@
-package com.genie.gymgenie.models.enums;
+package com.genie.gymgenie.models.enums.user;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum Gender {
+public enum JobType {
 
-    MALE("Male"),
-    FEMALE("Female"),
+    SEDENTARY("Sedentary"),
+    ACTIVE("Active"),
+    MANUAL_LABOR("Manual Labor"),
     OTHER("Other");
 
     private final String displayName;

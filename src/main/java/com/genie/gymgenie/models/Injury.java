@@ -1,6 +1,7 @@
 package com.genie.gymgenie.models;
 
 import com.genie.gymgenie.models.commons.BaseEntity;
+import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToOne;
@@ -14,6 +15,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @Entity(name = "USER_INJURY")
+@AttributeOverride(name = "id", column = @Column(name = "INJURY_ID"))
 public class Injury extends BaseEntity {
 
     @Column(name = "INJURY_DESCRIPTION", length = 5000)
