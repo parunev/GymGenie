@@ -39,6 +39,9 @@ public class User extends BaseEntity implements UserDetails {
     @Column(name = "AUTHORITY", nullable = false)
     private Authority authority;
 
+    @Column(name = "IS_ENABLED", columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private boolean isEnabled;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return Collections.singleton(new SimpleGrantedAuthority(authority.getAuthorityName()));
@@ -56,11 +59,6 @@ public class User extends BaseEntity implements UserDetails {
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
         return true;
     }
 }

@@ -3,7 +3,7 @@ package com.genie.gymgenie.config;
 import com.genie.gymgenie.security.SpringSecurityAuditorAware;
 import com.genie.gymgenie.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
+import okhttp3.OkHttpClient;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,13 +35,13 @@ public class ApplicationConfiguration {
     }
 
     @Bean
-    public UserDetailsService userDetailsService() {
-        return userService;
+    public OkHttpClient client(){
+        return new OkHttpClient().newBuilder().build();
     }
 
     @Bean
-    public ModelMapper modelMapper(){
-        return new ModelMapper();
+    public UserDetailsService userDetailsService() {
+        return userService;
     }
 
     @Bean

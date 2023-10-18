@@ -15,7 +15,7 @@ public class PasswordConfirmationValidator implements ConstraintValidator<Passwo
     @Override
     public boolean isValid(Object obj, ConstraintValidatorContext context) {
         if (obj == null) {
-            return true;
+            return false;
         }
 
         String password;
