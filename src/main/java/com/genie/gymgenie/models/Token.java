@@ -13,7 +13,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-@Entity(name = "GENIE_TOKENS")
+@Entity(name = "GENIE_TOKEN")
 @AttributeOverride(name = "id", column = @Column(name = "TOKEN_ID"))
 public class Token extends BaseEntity {
 

@@ -40,7 +40,7 @@ public class JwtService {
 
     private static final String SCOPE = "scope";
 
-    private static final String ISSUER = "LinkedEdge_API";
+    private static final String ISSUER = "GymGenie_API";
 
     public String extractEmail(String token) {
         return jwtDecoder.decode(token).getSubject();

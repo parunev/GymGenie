@@ -1,5 +1,6 @@
 package com.genie.gymgenie.utils.password;
 
+import com.genie.gymgenie.models.payload.user.login.ResetPasswordRequest;
 import com.genie.gymgenie.models.payload.user.registration.RegistrationRequest;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
@@ -22,6 +23,11 @@ public class PasswordConfirmationValidator implements ConstraintValidator<Passwo
         String confirmPassword;
 
         if (obj instanceof RegistrationRequest yourClass) {
+            password = yourClass.getPassword();
+            confirmPassword = yourClass.getConfirmPassword();
+
+            return password != null && password.equals(confirmPassword);
+        } else if (obj instanceof ResetPasswordRequest yourClass){
             password = yourClass.getPassword();
             confirmPassword = yourClass.getConfirmPassword();
 

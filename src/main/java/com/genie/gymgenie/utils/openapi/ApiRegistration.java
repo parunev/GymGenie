@@ -21,8 +21,8 @@ import java.lang.annotation.Target;
                 @ApiResponse(
                         description = "User-Friendly message should be the response:" +
                                 " 'Your registration was completed successfully. Please confirm your email account.'",
-                        responseCode = "200",
-                        content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class))}
+                        responseCode = "201",
+                        content = {@Content(mediaType = "application/json", schema = @Schema(implementation = com.genie.gymgenie.security.payload.ApiResponse.class))}
                 ),
                 @ApiResponse(
                         description = """
