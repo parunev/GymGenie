@@ -35,6 +35,11 @@ import java.lang.annotation.Target;
                                 "2. Message: User with the provided username not found. Please ensure you have entered the correct username",
                         responseCode = "400"
                         ,content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))}
+                ),
+                @ApiResponse(
+                        description = "Too many requests. Please try to login later. (20requests/minute)",
+                        responseCode = "429",
+                        content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))}
                 )
         }
 )

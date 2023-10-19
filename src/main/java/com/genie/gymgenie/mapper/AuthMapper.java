@@ -12,5 +12,6 @@ public interface AuthMapper {
 
     @Mapping(target = "authority", expression = "java(com.genie.gymgenie.models.enums.Authority.AUTHORITY_USER)")
     @Mapping(target = "password", source = "request.password", qualifiedBy = EncodedMapping.class)
+    @Mapping(target = "generationCredits", expression = "java(2)")
     User requestToUser(RegistrationRequest request);
 }

@@ -28,6 +28,9 @@ import java.lang.annotation.Target;
         responseCode = "500",
         description = "Invalid or Expired JWT Token",
         content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))})
-
+@ApiResponse(
+        responseCode = "429",
+        description = "Too many requests. Please try to request token later(5 requests/minute)",
+        content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))})
 public @interface ApiRefreshToken {
 }

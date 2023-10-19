@@ -38,5 +38,10 @@ import java.lang.annotation.Target;
         3. The user associated with this token is already enabled"""
         ,content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))}
 )
+@ApiResponse(
+        responseCode = "429"
+        , description = "Too many requests. Please try to confirm your email later."
+        , content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))}
+)
 public @interface ApiRegistrationConfirm {
 }

@@ -33,6 +33,11 @@ import java.lang.annotation.Target;
                                 Quite possible is to receive a 'Failed to send email.' if there is a problem with the email service""",
                         responseCode = "400",
                         content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))}
+                ),
+                @ApiResponse(
+                        description = "Too many requests. Please try to register later. (20requests/minute)",
+                        responseCode = "429",
+                        content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))}
                 )
         }
 )

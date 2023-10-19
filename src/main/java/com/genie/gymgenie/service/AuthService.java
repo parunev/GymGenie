@@ -152,6 +152,11 @@ public class AuthService {
                     throw resourceException("User with the provided username not found. Please ensure you have entered the correct username", HttpStatus.NOT_FOUND);
                 });
 
+        if (!user.isEnabled()){
+            genie.warn("User is not enabled");
+            throw authException("Your account is not enabled. Please confirm your email first.", HttpStatus.BAD_REQUEST);
+        }
+
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
         jwtUtils.revokeAndSaveTokens(user);
         Pair<String, String> jwt = jwtUtils.generateJwtTokens(user);

@@ -27,5 +27,10 @@ import java.lang.annotation.Target;
         responseCode = "404",
         description = "Token not found or is already used! There is possibility to get constraint error too",
         content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))})
+@ApiResponse(
+        responseCode = "429",
+        description = "Too many requests. Please try to reset your password later.",
+        content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))}
+)
 public @interface ApiResetPassword {
 }

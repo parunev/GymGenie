@@ -35,6 +35,9 @@ public class User extends BaseEntity implements UserDetails {
     @Column(name = "PASSWORD", nullable = false)
     private String password;
 
+    @Column(name = "GENERATION_CREDITS", nullable = false)
+    private Integer generationCredits;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "AUTHORITY", nullable = false)
     private Authority authority;

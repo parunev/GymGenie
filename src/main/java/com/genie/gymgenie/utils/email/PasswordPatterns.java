@@ -179,7 +179,7 @@ public class PasswordPatterns {
                 "\t\t\t\t\t\t\t\t\t\t\t\t\t\t<tr>\n" +
                 "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<td class=\"pad\" style=\"padding-bottom:10px;padding-left:15px;padding-right:15px;padding-top:10px;\">\n" +
                 "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<div style=\"color:#ffffff;font-family:Rubik, Trebuchet MS, Helvetica, sans-serif;font-size:22px;line-height:150%;text-align:center;mso-line-height-alt:33px;\">\n" +
-                "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<p style=\"margin: 0;\">DID YOU FORGER YOUR</p>\n" +
+                "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<p style=\"margin: 0;\">DID YOU FORGET YOUR</p>\n" +
                 "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<p style=\"margin: 0;\"><strong>PASSWORD?</strong></p>\n" +
                 "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n" +
                 "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</td>\n" +
@@ -261,6 +261,7 @@ public class PasswordPatterns {
                 "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<p style=\"margin: 0; word-break: break-word;\">&nbsp;</p>\n" +
                 "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<p style=\"margin: 0; word-break: break-word;\">&nbsp;(just kidding, request a new one).</p>\n" +
                 "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<p style=\"margin: 0; word-break: break-word;\">GymGenie 2023©&nbsp; All rights reserved.&nbsp;</p>\n" +
+                "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<p style=\"margin: 0; word-break: break-word;\"><a href=\"mailto:parunev@gmail.com?subject=(User)%20Someone%20changed%20my%20password!\" target=\"_blank\" title=\"Email\" rel=\"noopener\" style=\"text-decoration: underline; color: #c9c9c9;\">CONTACT US!</a></p>\n" +
                 "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<p style=\"margin: 0; word-break: break-word;\">&nbsp;</p>\n" +
                 "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n" +
                 "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</td>\n" +
@@ -556,8 +557,8 @@ public class PasswordPatterns {
                     \t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<td class="pad">
                     \t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<div style="color:#c9c9c9;font-family:Rubik, Trebuchet MS, Helvetica, sans-serif;font-size:12px;line-height:180%;text-align:center;mso-line-height-alt:21.6px;">
                     \t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<p style="margin: 0; word-break: break-word;">If you didn't initiate the change, please contact us immediately for your account's safety.</p>
-                    \t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<p style="margin: 0; word-break: break-word;"><a href="mailto:parunev@gmail.com?subject=(User)%20Someone%20changed%20my%20password!" target="_blank" title="Email" rel="noopener" style="text-decoration: underline; color: #c9c9c9;">CONTACT US!</a></p>
                     \t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<p style="margin: 0; word-break: break-word;">GymGenie 2023©&nbsp; All rights reserved.&nbsp;</p>
+                    \t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<p style="margin: 0; word-break: break-word;"><a href="mailto:parunev@gmail.com?subject=(User)%20Someone%20changed%20my%20password!" target="_blank" title="Email" rel="noopener" style="text-decoration: underline; color: #c9c9c9;">CONTACT US!</a></p>
                     \t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<p style="margin: 0; word-break: break-word;">&nbsp;</p>
                     \t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</div>
                     \t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</td>
