@@ -1,4 +1,4 @@
-package com.genie.gymgenie.utils;
+package com.genie.gymgenie.utils.email;
 
 import com.genie.gymgenie.security.GenieLogger;
 import com.genie.gymgenie.security.exception.EmailSenderException;
@@ -18,7 +18,7 @@ import static com.genie.gymgenie.utils.CurrentRequest.getCurrentRequest;
 
 @Component
 @RequiredArgsConstructor
-public class EmailSender {
+public class  EmailSender {
 
     private final JavaMailSender sender;
     private final GenieLogger genie = new GenieLogger(EmailSender.class);

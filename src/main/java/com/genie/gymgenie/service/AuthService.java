@@ -14,7 +14,9 @@ import com.genie.gymgenie.repositories.TokenRepository;
 import com.genie.gymgenie.repositories.UserRepository;
 import com.genie.gymgenie.security.GenieLogger;
 import com.genie.gymgenie.security.payload.ApiResponse;
-import com.genie.gymgenie.utils.EmailSender;
+import com.genie.gymgenie.utils.email.PasswordPatterns;
+import com.genie.gymgenie.utils.email.RegistrationPatterns;
+import com.genie.gymgenie.utils.email.EmailSender;
 import com.genie.gymgenie.utils.JwtUtils;
 import com.nimbusds.jose.util.Pair;
 import jakarta.servlet.http.HttpServletRequest;
@@ -49,6 +51,8 @@ public class AuthService {
     private final EmailSender mail;
     private final JwtUtils jwtUtils;
     private final GenieLogger genie = new GenieLogger(AuthService.class);
+    private static final String CONFIRMATION_LINK = "http://localhost:8080/genie/v1/auth/register/confirm?token=";
+    private static final String FORGOT_PASSWORD_LINK = "http://localhost:8080/genie/v1/auth/login/forgot-password?token="; // needs to be front-end link
 
 
     public ApiResponse register(@Valid RegistrationRequest request){
@@ -68,7 +72,9 @@ public class AuthService {
         tokenRepository.save(registrationToken);
         genie.info("Registration token created and saved to the database");
 
-        mail.send(user.getEmail(), registrationToken.getTokenValue(), "Welcome to GymGenie! Verify your email to get started!");
+        mail.send(user.getEmail()
+                , RegistrationPatterns.confirmation(CONFIRMATION_LINK + registrationToken.getTokenValue())
+                , "Welcome to GymGenie! Verify your email to get started!");
 
         return ApiResponse.builder()
                 .path(getCurrentRequest())
@@ -127,7 +133,9 @@ public class AuthService {
                 .build();
         tokenRepository.save(registrationToken);
 
-        mail.send(user.getEmail(), registrationToken.getTokenValue(), "GymGenie! Verify your email with this new token!");
+        mail.send(user.getEmail()
+                , RegistrationPatterns.almostConfirmed(CONFIRMATION_LINK + registrationToken.getTokenValue())
+                , "GymGenie! Verify your email with this new link!");
 
         return ApiResponse.builder()
                 .path(getCurrentRequest())
@@ -173,7 +181,9 @@ public class AuthService {
                 .build();
         tokenRepository.save(passwordToken);
 
-        mail.send(user.getEmail(), passwordToken.getTokenValue(), "GymGenie! Reset your password");
+        mail.send(user.getEmail()
+                , PasswordPatterns.forgotPassword(FORGOT_PASSWORD_LINK + passwordToken.getTokenValue())
+                , "GymGenie! Did you forget your password?");
         genie.info("Forgot password email has been sent");
 
         return ApiResponse.builder()
@@ -198,6 +208,7 @@ public class AuthService {
         User user = passwordToken.getUser();
         user.setPassword(request.getPassword());
         userRepository.save(user);
+        mail.send(user.getEmail(), PasswordPatterns.RESET_PASSWORD, "GymGenie! Did you change your password?");
 
         genie.info("Password changed successfully");
         return ApiResponse.builder()
