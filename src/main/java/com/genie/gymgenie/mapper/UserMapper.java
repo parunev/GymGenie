@@ -4,10 +4,7 @@ import com.genie.gymgenie.models.Injury;
 import com.genie.gymgenie.models.MedicalHistory;
 import com.genie.gymgenie.models.UserProfile;
 import com.genie.gymgenie.models.UserProfileDescription;
-import com.genie.gymgenie.models.payload.user.InjuryRequest;
-import com.genie.gymgenie.models.payload.user.MedicalHistoryRequest;
-import com.genie.gymgenie.models.payload.user.UserProfileDescriptionRequest;
-import com.genie.gymgenie.models.payload.user.UserProfileRequest;
+import com.genie.gymgenie.models.payload.user.profile.*;
 import org.mapstruct.Mapper;
 
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.genie.gymgenie.models.payload.user;
+package com.genie.gymgenie.models.payload.user.profile;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
