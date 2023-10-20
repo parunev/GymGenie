@@ -20,6 +20,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.jwt.JwtValidationException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -40,6 +41,7 @@ public class JwtFilter extends OncePerRequestFilter {
     private final GenieLogger genie = new GenieLogger(JwtFilter.class);
     private static final String CORRELATION_ID = "correlationId";
     static final String[] HEADERS = {"Authorization", "Bearer "};
+    private static final String DEFAULT_MESSAGE = "Authentication failed {} {}";
 
 
     @Override
@@ -95,8 +97,8 @@ public class JwtFilter extends OncePerRequestFilter {
 
                 filterChain.doFilter(request, response);
             }
-        } catch (ExpiredJwtException | ResourceNotFoundException | IOException | ServletException exception) {
-            genie.error("Authentication failed: {}", exception, exception.getMessage());
+        } catch (ExpiredJwtException | IOException | ServletException exception) {
+            genie.error(DEFAULT_MESSAGE, exception, exception.getMessage());
 
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
             response.getWriter().write(objectMapper.writeValueAsString(ApiError.builder()
@@ -105,6 +107,22 @@ public class JwtFilter extends OncePerRequestFilter {
                     .timestamp(LocalDateTime.now())
                     .build()));
 
+        } catch (JwtValidationException e){
+            genie.error(DEFAULT_MESSAGE, e, e.getMessage());
+            response.setStatus(HttpStatus.UNAUTHORIZED.value());
+            response.getWriter().write(objectMapper.writeValueAsString(ApiError.builder()
+                    .path(request.getRequestURI())
+                    .error(e.getMessage())
+                    .build()));
+
+        } catch (ResourceNotFoundException e){
+            genie.error(DEFAULT_MESSAGE, e, e.getApiError().getError());
+            response.setStatus(HttpStatus.UNAUTHORIZED.value());
+            response.getWriter().write(objectMapper.writeValueAsString(ApiError.builder()
+                    .path(request.getRequestURI())
+                    .error(e.getApiError().getError())
+                    .timestamp(LocalDateTime.now())
+                    .build()));
         } finally {
             MDC.remove(CORRELATION_ID);
             GenieLogger.clearLoggerProperties();

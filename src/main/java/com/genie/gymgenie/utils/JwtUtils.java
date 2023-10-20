@@ -69,4 +69,19 @@ public class JwtUtils {
 
         return Pair.of(accessToken, refreshToken);
     }
+
+    public void deleteUserJwtTokens(User user) {
+        genie.warn("Revoking and deleting any tokens related to {}", user.getUsername());
+
+        // Retrieve all valid JWT tokens associated with the user.
+        List<JwtToken> tokens = repository.findAllValidTokenByUserId(user.getId());
+
+        if (tokens.isEmpty()){
+            genie.info("No tokens found to delete");
+            return;
+        }
+
+        // Delete all tokens found, effectively revoking them.
+        repository.deleteAll(tokens);
+    }
 }

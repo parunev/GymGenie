@@ -19,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import static com.genie.gymgenie.utils.ExceptionThrower.TOO_MANY_REQUESTS;
 import static com.genie.gymgenie.utils.ExceptionThrower.authException;
 
 @RestController
@@ -30,7 +31,6 @@ public class AuthController {
     private final AuthService authService;
     private final RateLimitConfig rateLimit;
     private final GenieLogger genie = new GenieLogger(AuthController.class);
-    private static final String TOO_MANY_REQUESTS = "Too many requests. Please try %s later.";
 
     @ApiRegistration
     @PostMapping("/register")
