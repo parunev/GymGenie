@@ -58,6 +58,8 @@ public class UserService implements UserDetailsService {
     private final JwtUtils jwtUtils;
     private final EmailSender mail;
     private final GenieLogger genie = new GenieLogger(UserService.class);
+
+    // needs to be redirected to the front-end
     private static final String CONFIRMATION_LINK = "http://localhost:8080/genie/v1/user/change-email/confirm?token=%s&e=%s";
 
     @Override
