@@ -12,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-@Entity(name = "WORKOUT")
+@Entity(name = "GENIE_WORKOUT")
 @AttributeOverride(name = "id", column = @Column(name = "WORKOUT_ID"))
 public class Workout extends BaseEntity {
 

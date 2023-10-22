@@ -9,7 +9,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-@Entity(name = "EXERCISE")
+@Entity(name = "GENIE_EXERCISE")
 @AttributeOverride(name = "id", column = @Column(name = "EXERCISE_ID"))
 public class Exercise extends BaseEntity {
 
