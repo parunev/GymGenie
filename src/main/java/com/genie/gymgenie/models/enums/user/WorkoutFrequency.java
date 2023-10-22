@@ -5,12 +5,15 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum JobType {
+public enum WorkoutFrequency {
 
-    SEDENTARY("Sedentary"),
-    ACTIVE("Active"),
-    MANUAL_LABOR("Manual Labor"),
-    OTHER("Other");
+    ONE("1 X"),
+    TWO("2 X"),
+    THREE("3 X"),
+    FOUR("4 X"),
+    FIVE("5 X"),
+    SIX("6 X"),
+    SEVEN("7 X");
 
     private final String displayName;
 }

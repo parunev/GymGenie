@@ -7,9 +7,10 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum FitnessLevel {
 
-    BEGINNER("Beginner"),
-    INTERMEDIATE("Intermediate"),
-    ADVANCED("Advanced");
+    BEGINNER("I'm new or have only tried it for a bit"),
+    INTERMEDIATE("I've been doing this for a while"),
+    ADVANCED("I've stuck to a balanced routine for years!"),
+    PROFESSIONAL("I'm a professional athlete");
 
     private final String displayName;
 }

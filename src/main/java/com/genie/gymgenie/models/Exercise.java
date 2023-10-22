@@ -1,8 +1,6 @@
 package com.genie.gymgenie.models;
 
 import com.genie.gymgenie.models.commons.BaseEntity;
-import com.genie.gymgenie.models.enums.fitness.WeekDay;
-import com.genie.gymgenie.models.enums.user.ExerciseType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -14,14 +12,6 @@ import lombok.*;
 @Entity(name = "EXERCISE")
 @AttributeOverride(name = "id", column = @Column(name = "EXERCISE_ID"))
 public class Exercise extends BaseEntity {
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "DAY_OF_WEEK", nullable = false)
-    private WeekDay dayOfWeek;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "EXERCISE_TYPE", nullable = false)
-    private ExerciseType exerciseType;
 
     @Column(name = "EXERCISE_NAME", nullable = false)
     private String exerciseName;
@@ -39,6 +29,6 @@ public class Exercise extends BaseEntity {
     private String exerciseRest;
 
     @ManyToOne
-    @JoinColumn(name = "FITNESS_REGIME_ID")
-    private FitnessRegime regime;
+    @JoinColumn(name = "WORKOUT_ID")
+    private Workout workout;
 }

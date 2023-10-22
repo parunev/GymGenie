@@ -1,11 +1,11 @@
-package com.genie.gymgenie.models.enums.fitness;
+package com.genie.gymgenie.models.enums.user;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum WeekDay {
+public enum WorkoutDays {
 
     MONDAY("Monday"),
     TUESDAY("Tuesday"),

@@ -1,15 +1,20 @@
 package com.genie.gymgenie.service;
 
 import com.genie.gymgenie.mapper.AuthMapper;
+import com.genie.gymgenie.models.Health;
 import com.genie.gymgenie.models.JwtToken;
 import com.genie.gymgenie.models.Token;
 import com.genie.gymgenie.models.User;
 import com.genie.gymgenie.models.enums.TokenType;
+import com.genie.gymgenie.models.enums.user.ActivityLevel;
+import com.genie.gymgenie.models.enums.user.BodyFat;
+import com.genie.gymgenie.models.enums.user.Gender;
 import com.genie.gymgenie.models.payload.user.login.ForgotPasswordRequest;
 import com.genie.gymgenie.models.payload.user.login.LoginRequest;
 import com.genie.gymgenie.models.payload.user.login.ResetPasswordRequest;
 import com.genie.gymgenie.models.payload.user.registration.RegistrationRequest;
 import com.genie.gymgenie.models.payload.user.registration.ResendTokenRequest;
+import com.genie.gymgenie.repositories.HealthRepository;
 import com.genie.gymgenie.repositories.TokenRepository;
 import com.genie.gymgenie.repositories.UserRepository;
 import com.genie.gymgenie.security.GenieLogger;
@@ -45,6 +50,7 @@ import static com.genie.gymgenie.utils.TokenValidator.isValidToken;
 public class AuthService {
 
     private final UserRepository userRepository;
+    private final HealthRepository healthRepository;
     private final TokenRepository tokenRepository;
     private final AuthenticationManager authenticationManager;
     private final AuthMapper authMapper;
@@ -61,6 +67,10 @@ public class AuthService {
 
         User user = authMapper.requestToUser(request);
         userRepository.save(user);
+
+        Health health = indexUserHealth(user);
+        healthRepository.save(health);
+
         genie.info("User successfully saved to the database");
 
         Token registrationToken = Token.builder()
@@ -278,6 +288,68 @@ public class AuthService {
                 .status(HttpStatus.CREATED)
                 .timestamp(LocalDateTime.now())
                 .build();
+    }
+
+    private Health indexUserHealth(User user) {
+        return Health.builder()
+                .user(user)
+                .bodyMassIndex(calcBMI(user.getHeight(), user.getWeight()))
+                .totalDailyEnergyExpenditure(calcTDEE(user.getWeight(), user.getHeight(), user.getAge(), user.getGender(), user.getActivityLevel()))
+                .avgBodyFat(calcBF(user.getHeight(), user.getWeight(), user.getAge(), user.getGender()))
+                .build();
+    }
+
+    private BodyFat calcBF(Integer height, Integer weight, Integer age, Gender gender) {
+        double bmi = calcBMI(height, weight);
+        double bodyFatPercentage;
+        double lowerBound;
+        double upperBound;
+
+        if (gender == Gender.MALE) {
+            bodyFatPercentage = 1.2 * bmi + 0.23 * age - 16.2;
+            lowerBound = 6;
+            upperBound = 14;
+        } else {
+            bodyFatPercentage = 1.2 * bmi + 0.23 * age - 5.4;
+            lowerBound = 14;
+            upperBound = 21;
+        }
+
+        if (bodyFatPercentage < lowerBound) {
+            return BodyFat.ESSENTIAL;
+        } else if (bodyFatPercentage < upperBound) {
+            return BodyFat.ATHLETES;
+        }
+
+        if (bodyFatPercentage < 18) {
+            return BodyFat.FITNESS;
+        } else if (bodyFatPercentage < 25) {
+            return BodyFat.ACCEPTABLE;
+        } else {
+            return BodyFat.OBESITY;
+        }
+    }
+
+    private Double calcTDEE(Integer weight, Integer height, Integer age, Gender gender, ActivityLevel activityLevel) {
+        double bmr;
+        if (gender == Gender.MALE) {
+            bmr = 10 * weight + 6.25 * height - 5 * age + 5;
+        } else {
+            bmr = 10 * weight + 6.25 * height - 5 * age - 161;
+        }
+
+        return switch (activityLevel) {
+            case SEDENTARY -> bmr * 1.2;
+            case LIGHTLY_ACTIVE -> bmr * 1.375;
+            case MODERATELY_ACTIVE -> bmr * 1.55;
+            case VERY_ACTIVE -> bmr * 1.725;
+            case EXTRA_ACTIVE -> bmr * 1.9;
+        };
+    }
+
+    private Double calcBMI(Integer height, Integer weight) {
+        double mHeight = height / 100.0;
+        return weight / (mHeight * mHeight);
     }
 
     private void userExists (String email, String username) {
