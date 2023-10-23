@@ -6,9 +6,6 @@ import com.genie.gymgenie.models.JwtToken;
 import com.genie.gymgenie.models.Token;
 import com.genie.gymgenie.models.User;
 import com.genie.gymgenie.models.enums.TokenType;
-import com.genie.gymgenie.models.enums.user.ActivityLevel;
-import com.genie.gymgenie.models.enums.user.BodyFat;
-import com.genie.gymgenie.models.enums.user.Gender;
 import com.genie.gymgenie.models.payload.user.login.ForgotPasswordRequest;
 import com.genie.gymgenie.models.payload.user.login.LoginRequest;
 import com.genie.gymgenie.models.payload.user.login.ResetPasswordRequest;
@@ -39,9 +36,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static com.genie.gymgenie.utils.CurrentRequest.getCurrentRequest;
 import static com.genie.gymgenie.utils.ExceptionThrower.authException;
 import static com.genie.gymgenie.utils.ExceptionThrower.resourceException;
+import static com.genie.gymgenie.utils.HealthCalculator.*;
+import static com.genie.gymgenie.utils.ResponseBuilder.response;
+import static com.genie.gymgenie.utils.ResponseBuilder.responseLogin;
 import static com.genie.gymgenie.utils.TokenValidator.isValidToken;
 
 @Service
@@ -86,12 +85,7 @@ public class AuthService {
                 , RegistrationPatterns.confirmation(CONFIRMATION_LINK + registrationToken.getTokenValue())
                 , "Welcome to GymGenie! Verify your email to get started!");
 
-        return ApiResponse.builder()
-                .path(getCurrentRequest())
-                .message("Your registration was completed successfully. Please confirm your email!")
-                .timestamp(LocalDateTime.now())
-                .status(HttpStatus.CREATED)
-                .build();
+        return response("Your registration was completed successfully. Please confirm your email!");
     }
 
     @Transactional
@@ -113,12 +107,7 @@ public class AuthService {
         userRepository.enableAppUser(registrationToken.getUser().getEmail());
         genie.info("User enabled");
 
-        return ApiResponse.builder()
-                .path(getCurrentRequest())
-                .message("Your email was confirmed successfully. You can now login.")
-                .timestamp(LocalDateTime.now())
-                .status(HttpStatus.OK)
-                .build();
+        return response("Your email was confirmed successfully. You can now login.");
     }
 
     public ApiResponse resendConfirmation(@Valid ResendTokenRequest request){
@@ -147,12 +136,7 @@ public class AuthService {
                 , RegistrationPatterns.almostConfirmed(CONFIRMATION_LINK + registrationToken.getTokenValue())
                 , "GymGenie! Verify your email with this new link!");
 
-        return ApiResponse.builder()
-                .path(getCurrentRequest())
-                .message("A new confirmation email has been sent to your email address.")
-                .timestamp(LocalDateTime.now())
-                .status(HttpStatus.OK)
-                .build();
+        return response("A new confirmation email has been sent to your email address.");
     }
 
     public ApiResponse login(@Valid LoginRequest request){
@@ -171,14 +155,7 @@ public class AuthService {
         jwtUtils.revokeAndSaveTokens(user);
         Pair<String, String> jwt = jwtUtils.generateJwtTokens(user);
 
-        return ApiResponse.builder()
-                .path(getCurrentRequest())
-                .accessToken(jwt.getLeft())
-                .refreshToken(jwt.getRight())
-                .message("Login successful. Welcome, " + user.getUsername() + "!")
-                .timestamp(LocalDateTime.now())
-                .status(HttpStatus.OK)
-                .build();
+        return responseLogin(jwt.getLeft(), jwt.getRight(), "Login successful. Welcome, " + user.getUsername() + "!");
     }
 
     public ApiResponse sendForgotPasswordEmail(@Valid ForgotPasswordRequest request){
@@ -201,13 +178,7 @@ public class AuthService {
                 , "GymGenie! Did you forget your password?");
         genie.info("Forgot password email has been sent");
 
-        return ApiResponse.builder()
-                .path(getCurrentRequest())
-                .message("An email has been sent to your registered email address." +
-                        " The password reset link will expire in 15 minutes for security reasons.")
-                .timestamp(LocalDateTime.now())
-                .status(HttpStatus.OK)
-                .build();
+        return response("An email has been sent to your registered email address. The password reset link will expire in 15 minutes for security reasons.");
     }
 
     public ApiResponse resetPassword(String token, @Valid ResetPasswordRequest request){
@@ -226,13 +197,7 @@ public class AuthService {
         mail.send(user.getEmail(), PasswordPatterns.RESET_PASSWORD, "GymGenie! Did you change your password?");
 
         genie.info("Password changed successfully");
-        return ApiResponse.builder()
-                .path(getCurrentRequest())
-                .message("Your password has been successfully reset." +
-                        " You can now use your new password to log in.")
-                .timestamp(LocalDateTime.now())
-                .status(HttpStatus.OK)
-                .build();
+        return response("Your password has been successfully reset. You can now use your new password to log in.");
     }
 
     public ApiResponse refreshToken(HttpServletRequest request) {
@@ -282,12 +247,7 @@ public class AuthService {
             throw authException("Refresh token was not created. Pleas try again!", HttpStatus.UNAUTHORIZED);
         }
 
-        return ApiResponse.builder()
-                .path(getCurrentRequest())
-                .accessToken(token.getTokenValue())
-                .status(HttpStatus.CREATED)
-                .timestamp(LocalDateTime.now())
-                .build();
+        return responseLogin(token.getTokenValue(), refreshToken, "Token refreshed successfully!");
     }
 
     private Health indexUserHealth(User user) {
@@ -297,59 +257,6 @@ public class AuthService {
                 .totalDailyEnergyExpenditure(calcTDEE(user.getWeight(), user.getHeight(), user.getAge(), user.getGender(), user.getActivityLevel()))
                 .avgBodyFat(calcBF(user.getHeight(), user.getWeight(), user.getAge(), user.getGender()))
                 .build();
-    }
-
-    private BodyFat calcBF(Integer height, Integer weight, Integer age, Gender gender) {
-        double bmi = calcBMI(height, weight);
-        double bodyFatPercentage;
-        double lowerBound;
-        double upperBound;
-
-        if (gender == Gender.MALE) {
-            bodyFatPercentage = 1.2 * bmi + 0.23 * age - 16.2;
-            lowerBound = 6;
-            upperBound = 14;
-        } else {
-            bodyFatPercentage = 1.2 * bmi + 0.23 * age - 5.4;
-            lowerBound = 14;
-            upperBound = 21;
-        }
-
-        if (bodyFatPercentage < lowerBound) {
-            return BodyFat.ESSENTIAL;
-        } else if (bodyFatPercentage < upperBound) {
-            return BodyFat.ATHLETES;
-        }
-
-        if (bodyFatPercentage < 18) {
-            return BodyFat.FITNESS;
-        } else if (bodyFatPercentage < 25) {
-            return BodyFat.ACCEPTABLE;
-        } else {
-            return BodyFat.OBESITY;
-        }
-    }
-
-    private Double calcTDEE(Integer weight, Integer height, Integer age, Gender gender, ActivityLevel activityLevel) {
-        double bmr;
-        if (gender == Gender.MALE) {
-            bmr = 10 * weight + 6.25 * height - 5 * age + 5;
-        } else {
-            bmr = 10 * weight + 6.25 * height - 5 * age - 161;
-        }
-
-        return switch (activityLevel) {
-            case SEDENTARY -> bmr * 1.2;
-            case LIGHTLY_ACTIVE -> bmr * 1.375;
-            case MODERATELY_ACTIVE -> bmr * 1.55;
-            case VERY_ACTIVE -> bmr * 1.725;
-            case EXTRA_ACTIVE -> bmr * 1.9;
-        };
-    }
-
-    private Double calcBMI(Integer height, Integer weight) {
-        double mHeight = height / 100.0;
-        return weight / (mHeight * mHeight);
     }
 
     private void userExists (String email, String username) {

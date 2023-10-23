@@ -7,12 +7,12 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum Objective {
 
-    MUSCLE_GROWTH("Muscle Growth"),
-    STRENGTH_TRAINING("Strength Training"),
-    CALORIE_BURN("Calorie Burn"),
-    WEIGHT_LOSS("Weight Loss"),
-    ENDURANCE("Endurance"),
-    TONING("Toning");
+    MUSCLE_GROWTH("build muscle"),
+    STRENGTH_TRAINING("build strength"),
+    CALORIE_BURN("burn calories"),
+    WEIGHT_LOSS("lose weight"),
+    ENDURANCE("increase endurance"),
+    TONING("tone muscles");
 
     private final String objectiveName;
 }

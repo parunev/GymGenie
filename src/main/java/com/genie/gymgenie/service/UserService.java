@@ -23,12 +23,11 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.util.Base64;
 
 import static com.genie.gymgenie.security.CurrentUser.getCurrentUserDetails;
-import static com.genie.gymgenie.utils.CurrentRequest.getCurrentRequest;
+import static com.genie.gymgenie.utils.ResponseBuilder.response;
+import static com.genie.gymgenie.utils.EnDec.enDecEmail;
 import static com.genie.gymgenie.utils.ExceptionThrower.authException;
 import static com.genie.gymgenie.utils.ExceptionThrower.resourceException;
 import static com.genie.gymgenie.utils.TokenValidator.isValidToken;
@@ -63,11 +62,7 @@ public class UserService implements UserDetailsService {
     }
 
     public ApiResponse changeUserPassword(@Valid ChangePasswordRequest request){
-        User user = userRepository.findByUsername(getCurrentUserDetails().getUsername())
-                .orElseThrow(() -> {
-                    genie.warn("User with username {} not found", getCurrentUserDetails().getUsername());
-                    throw resourceException("No account associated with this username(%s) found.".formatted(getCurrentUserDetails().getUsername()), HttpStatus.NOT_FOUND);
-                });
+        User user = user();
 
         boolean validPassword = passwordUtils.isThePasswordValid(
                 request.getOldPassword(), user.getPassword(), request.getNewPassword(), request.getConfirmNewPassword());
@@ -79,25 +74,18 @@ public class UserService implements UserDetailsService {
         }
 
         mail.send(user.getEmail(), PROFILE_PASSWORD_CHANGE, "GymGenie! Your password has been changed!");
-        return ApiResponse.builder()
-                .path(getCurrentRequest())
-                .message("Your password has been changed successfully!")
-                .timestamp(LocalDateTime.now())
-                .status(HttpStatus.OK)
-                .build();
+
+        return response("Your password has been changed successfully!");
     }
 
     public ApiResponse changeUserEmail(@Valid ChangeEmailRequest request){
-        User user = userRepository.findByUsername(getCurrentUserDetails().getUsername())
-                .orElseThrow(() -> {
-                    genie.warn("User with username {} not found", getCurrentUserDetails().getUsername());
-                    throw resourceException("No account associated with this username(%s) found.".formatted(getCurrentUserDetails().getUsername()), HttpStatus.NOT_FOUND);
-                });
+        User user = user();
 
         if (user.getEmail().equals(request.getNewEmail())){
             genie.warn("User with username {} tried to change the email to the same email", getCurrentUserDetails().getUsername());
             throw authException("Dear %s, you have tried to change the email to the same email."
                     .formatted(getCurrentUserDetails().getUsername()), HttpStatus.BAD_REQUEST);
+
         } else if (userRepository.existsByEmail(request.getNewEmail())){
             genie.warn("User with username {} tried to change the email to an existing email", getCurrentUserDetails().getUsername());
             throw authException("Dear %s, you have tried to change the email to an existing email."
@@ -121,12 +109,7 @@ public class UserService implements UserDetailsService {
         String encodedEmail = enDecEmail(request.getNewEmail(), "encode");
         mail.send(user.getEmail(), EmailPattern.changeEmail(CONFIRMATION_LINK.formatted(token.getTokenValue(),encodedEmail)),"GymGenie! Confirm your email change!");
 
-        return ApiResponse.builder()
-                .path(getCurrentRequest())
-                .message("Please check your email to confirm the change.")
-                .timestamp(LocalDateTime.now())
-                .status(HttpStatus.OK)
-                .build();
+        return response("Please check your email to confirm the change.");
     }
 
     @Transactional
@@ -148,22 +131,15 @@ public class UserService implements UserDetailsService {
 
         jwtUtils.deleteUserJwtTokens(user);
         genie.info("The email has been changed successfully!");
-        return ApiResponse.builder()
-                .path(getCurrentRequest())
-                .message("The email has been changed successfully! Please, log in again!")
-                .timestamp(LocalDateTime.now())
-                .status(HttpStatus.OK)
-                .build();
+
+        return response("The email has been changed successfully! Please, log in again!");
     }
 
-    private String enDecEmail(String email, String operation) {
-        byte[] bytes;
-        if(operation.equals("encode")){
-            bytes = email.getBytes(StandardCharsets.UTF_8);
-            return Base64.getEncoder().encodeToString(bytes);
-        } else {
-            bytes = Base64.getDecoder().decode(email);
-            return new String(bytes, StandardCharsets.UTF_8);
-        }
+    private User user() {
+        return userRepository.findByUsername(getCurrentUserDetails().getUsername())
+                .orElseThrow(() -> {
+                    genie.warn("User with username {} not found", getCurrentUserDetails().getUsername());
+                    throw resourceException("No account associated with this username(%s) found.".formatted(getCurrentUserDetails().getUsername()), HttpStatus.NOT_FOUND);
+                });
     }
 }

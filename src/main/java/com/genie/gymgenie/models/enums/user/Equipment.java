@@ -7,8 +7,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum Equipment {
 
-    FULL_GYM("Full Gym"),
-    HOME_GYM("Home Gym"),
+    FULL_GYM("Full Gym equipment"),
+    HOME_GYM("Home Gym equipment"),
     BARBELLS("Barbells"),
     DUMBBELLS("Dumbbells"),
     KETTLE_BELLS("Kettle bells"),

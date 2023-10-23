@@ -29,11 +29,6 @@ public class RegistrationRequest {
     @Schema(description = "List of user's motivations")
     private List<Motivation> motivations;
 
-    @NotNull(message = "Great choices ahead! Select at least one preferred workout area so we can tailor your fitness plan.")
-    @Size(min = 1, message = "At least one workout area must be selected")
-    @Schema(description = "List of user's preferred workout areas")
-    private List<WorkoutAreas> workoutAreas;
-
     @NotNull(message = "Let's find your starting point! Select your fitness level.")
     @Schema(description = "Fitness level of the user", example = "BEGINNER")
     private FitnessLevel fitnessLevel;
