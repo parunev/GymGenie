@@ -1,6 +1,5 @@
 package com.genie.gymgenie.controller;
 
-import com.genie.gymgenie.models.payload.diet.DietRequest;
 import com.genie.gymgenie.models.payload.workout.WorkoutRequest;
 import com.genie.gymgenie.models.payload.workout.WorkoutResponse;
 import com.genie.gymgenie.service.GenieService;
@@ -23,11 +22,5 @@ public class GenieController {
     @GetMapping("/workout")
     public ResponseEntity<WorkoutResponse> generateWorkout(@RequestBody WorkoutRequest request){
         return ResponseEntity.ok(genieService.generateWorkout(request));
-    }
-
-    @PreAuthorize("hasRole('ROLE_USER')")
-    @GetMapping("/calories")
-    public ResponseEntity<String> generateCalorieIntake(@RequestBody DietRequest request){
-        return ResponseEntity.ok(genieService.generateCalorieIntake(request));
     }
 }

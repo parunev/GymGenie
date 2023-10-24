@@ -3,6 +3,7 @@ package com.genie.gymgenie.models.payload.workout;
 import com.genie.gymgenie.models.enums.workout.Duration;
 import com.genie.gymgenie.models.enums.workout.Objective;
 import com.genie.gymgenie.models.enums.workout.WorkoutAreas;
+import com.genie.gymgenie.models.payload.diet.CalorieIntakeResponse;
 import lombok.Data;
 
 import java.util.List;
@@ -16,4 +17,5 @@ public class WorkoutResponse {
     private Objective objective;
     private Duration duration;
     private List<ExerciseDto> exercises;
+    private CalorieIntakeResponse calorieIntake;
 }
