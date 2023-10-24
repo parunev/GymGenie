@@ -1,6 +1,7 @@
 package com.genie.gymgenie.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.genie.gymgenie.models.diet.CalorieIntake;
 import com.genie.gymgenie.models.payload.workout.WorkoutDto;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -13,6 +14,16 @@ public class JsonExtract {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             return objectMapper.readValue(json, WorkoutDto.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static CalorieIntake extractCalorieIntakeResponseFromJSON(String json) {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            return objectMapper.readValue(json, CalorieIntake.class);
         } catch (Exception e) {
             e.printStackTrace();
             return null;

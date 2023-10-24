@@ -41,6 +41,14 @@ public class GenieSettings {
     }
 
     @Bean
+    GenieAgent calorieAgent(ChatLanguageModel chatLanguageModel){
+        return AiServices.builder(GenieAgent.class)
+                .chatLanguageModel(chatLanguageModel)
+                .chatMemory(MessageWindowChatMemory.withMaxMessages(1000))
+                .build();
+    }
+
+    @Bean
     Retriever<TextSegment> retriever(EmbeddingStore<TextSegment> embeddingStore, EmbeddingModel embeddingModel) {
         int maxResultsRetrieved = 1;
         double minScore = 0.6;
