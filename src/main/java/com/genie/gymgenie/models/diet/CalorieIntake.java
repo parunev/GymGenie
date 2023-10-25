@@ -2,10 +2,10 @@ package com.genie.gymgenie.models.diet;
 
 import com.genie.gymgenie.models.Workout;
 import com.genie.gymgenie.models.commons.BaseEntity;
-import com.genie.gymgenie.models.diet.main.OtherOption;
-import com.genie.gymgenie.models.diet.main.OurSuggestion;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.List;
 
 @Data
 @Builder
@@ -16,13 +16,8 @@ import lombok.*;
 @AttributeOverride(name = "id", column = @Column(name = "CALORIE_INTAKE_ID"))
 public class CalorieIntake extends BaseEntity {
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "OUR_SUGGESTION_ID")
-    private OurSuggestion ourSuggestions;
-
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "OTHER_OPTION_ID")
-    private OtherOption otherOptions;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "calorieIntake")
+    private List<WeightOption> weightOptions;
 
     @ManyToOne
     @JoinColumn(name = "WORKOUT_ID")

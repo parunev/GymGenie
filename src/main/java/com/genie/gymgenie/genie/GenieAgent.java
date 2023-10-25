@@ -68,50 +68,38 @@ public interface GenieAgent {
                          - Other options give suggestions based on the user's workout details.
                        
                        Response Schema:
-                         {
-                                      "ourSuggestions": {
-                                          "calorieIntakeForToday": "",
-                                          "calorieIntakePerMeal": {
-                                              "minCalories": "",
-                                              "maxCalories": ""
-                                          },
-                                          "whyDoWeSuggestThis": ""
-                                      },
-                                      "otherOptions": {
-                                          "maintainWeight": {
+                         {\s
+                                        "weightOptions": [
+                                          {
+                                              "name": "[MAINTAIN_WEIGHT, MILD_WEIGHT_LOSS, WEIGHT_LOSS, EXTREME_WEIGHT_LOSS]",
                                               "calorieIntakeForToday": "",
-                                              "calorieIntakePerMeal": {
-                                                  "minCalories": "",
-                                                  "maxCalories": ""
-                                              },
+                                              "minCaloriesPerMeal": "",
+                                              "maxCaloriesPerMeal": "",
                                               "explanation": ""
                                           },
-                                          "mildWeightLoss": {
+                                          {
+                                              "name": "[MAINTAIN_WEIGHT, MILD_WEIGHT_LOSS, WEIGHT_LOSS, EXTREME_WEIGHT_LOSS]",
                                               "calorieIntakeForToday": "",
-                                              "calorieIntakePerMeal": {
-                                                  "minCalories": "",
-                                                  "maxCalories": ""
-                                              },
+                                              "minCaloriesPerMeal": "",
+                                              "maxCaloriesPerMeal": "",
                                               "explanation": ""
                                           },
-                                          "weightLoss": {
+                                          {
+                                              "name": "[MAINTAIN_WEIGHT, MILD_WEIGHT_LOSS, WEIGHT_LOSS, EXTREME_WEIGHT_LOSS]",
                                               "calorieIntakeForToday": "",
-                                              "calorieIntakePerMeal": {
-                                                  "minCalories": "",
-                                                  "maxCalories": ""
-                                              },
+                                              "minCaloriesPerMeal": "",
+                                              "maxCaloriesPerMeal": "",
                                               "explanation": ""
                                           },
-                                          "extremeWeightLoss": {
+                                          {
+                                              "name": "[MAINTAIN_WEIGHT, MILD_WEIGHT_LOSS, WEIGHT_LOSS, EXTREME_WEIGHT_LOSS]",
                                               "calorieIntakeForToday": "",
-                                              "calorieIntakePerMeal": {
-                                                  "minCalories": "",
-                                                  "maxCalories": ""
-                                              },
+                                              "minCaloriesPerMeal": "",
+                                              "maxCaloriesPerMeal": "",
                                               "explanation": ""
                                           }
+                                          ],
                                       }
-                                  }
                     """
     })
     String calorieIntake(String message);

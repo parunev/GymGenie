@@ -2,7 +2,7 @@ package com.genie.gymgenie.controller;
 
 import com.genie.gymgenie.models.payload.workout.WorkoutRequest;
 import com.genie.gymgenie.models.payload.workout.WorkoutResponse;
-import com.genie.gymgenie.service.GenieService;
+import com.genie.gymgenie.service.WorkoutService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -16,11 +16,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/genie/v1")
 public class GenieController {
 
-    private final GenieService genieService;
+    private final WorkoutService workoutService;
 
     @PreAuthorize("hasRole('ROLE_USER')")
     @GetMapping("/workout")
     public ResponseEntity<WorkoutResponse> generateWorkout(@RequestBody WorkoutRequest request){
-        return ResponseEntity.ok(genieService.generateWorkout(request));
+        return ResponseEntity.ok(workoutService.generateWorkout(request));
     }
 }

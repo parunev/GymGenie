@@ -38,7 +38,7 @@ import static com.genie.gymgenie.utils.JsonExtract.extractInformationFromJSON;
 @Service
 @Validated
 @RequiredArgsConstructor
-public class GenieService {
+public class WorkoutService {
 
     private final GenieAgent workoutAgent;
     private final GenieAgent calorieAgent;
@@ -49,7 +49,7 @@ public class GenieService {
     private final CalorieIntakeRepository calorieIntakeRepository;
     private final WorkoutMapper workoutMapper;
     private final IntakeMapper intakeMapper;
-    private final GenieLogger genie = new GenieLogger(GenieService.class);
+    private final GenieLogger genie = new GenieLogger(WorkoutService.class);
 
     public WorkoutResponse generateWorkout(@Valid WorkoutRequest request){
         genie.info("Generating workout for user {}", getCurrentUserDetails().getUsername());
@@ -113,6 +113,9 @@ public class GenieService {
         genie.info("Saving calorie intake to database");
         CalorieIntake calorieIntake = extractCalorieIntakeResponseFromJSON(genieOutput);
         if (calorieIntake != null){
+            for (int i = 0; i < calorieIntake.getWeightOptions().size(); i++){
+                calorieIntake.getWeightOptions().get(i).setCalorieIntake(calorieIntake);
+            }
             calorieIntake.setWorkout(workout);
             calorieIntakeRepository.save(calorieIntake);
         }

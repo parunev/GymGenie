@@ -1,17 +1,11 @@
 package com.genie.gymgenie.models.payload.diet;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class CalorieIntakeResponse {
 
-    private OurSuggestionDto ourSuggestions;
-    private OtherOptionDto otherOptions;
-
+    private List<WeightOptionDto> weightOptions;
 }
