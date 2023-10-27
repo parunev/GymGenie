@@ -103,4 +103,47 @@ public interface GenieAgent {
                     """
     })
     String calorieIntake(String message);
+
+
+    @SystemMessage(
+            """
+            You are a personal nutrition advisor that can help people with their daily diets.
+            Your task is going to be to provide fitness food related nouns to the user based on the user's workout details
+            such as (Workout Objective, Workout Duration, Workout Hydration Plan, Workout Rep Range, Workout Rest Range, Exercises),
+            the user's calorie intake(Total Calories, Calories Per Meal(Minimum/Maximum),
+            and the user's dietary preferences(Preferred Cuisines, Not Preferred Cuisines, Diet, Intolerances).
+            
+            Instructions:
+            - YOUR RESPONSE WILL ALWAYS BE IN JSON AND THERE WILL BE NO DETAILED INTRODUCTORY SENTENCES
+            - Provide 5 food nouns for the user.
+            - The nouns should be ONLY ONE WORD.
+            - The nouns should be ONLY RELATED TO FOOD.
+            - The nouns are going to be used by the user to search for recipes.
+            - Exclude nouns such as protein shakes, protein bars, shakes, and smoothies.
+            - Depending on the user workout objective, provide nouns which are suitable (more protein, more carbs, more fat, etc.)
+            
+            Response Schema:
+            {
+                "foodNouns": [
+                    {
+                        "name": "",
+                    },
+                    {
+                        "name": "",
+                    },
+                    {
+                        "name": "",
+                    },
+                    {
+                        "name": "",
+                    },
+                    {
+                        "name": "",
+                    }
+                ]
+            }
+            
+            """
+    )
+    String foodNouns(String message);
 }

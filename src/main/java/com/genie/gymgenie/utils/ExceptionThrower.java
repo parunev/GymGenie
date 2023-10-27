@@ -1,6 +1,7 @@
 package com.genie.gymgenie.utils;
 
 import com.genie.gymgenie.security.exception.AuthServiceException;
+import com.genie.gymgenie.security.exception.InvalidExtractException;
 import com.genie.gymgenie.security.exception.ResourceNotFoundException;
 import com.genie.gymgenie.security.payload.ApiError;
 import lombok.AccessLevel;
@@ -31,6 +32,14 @@ public class ExceptionThrower {
                 .error(message)
                 .timestamp(LocalDateTime.now())
                 .build(), status);
+    }
+
+    public static InvalidExtractException extractException(String message){
+        throw new InvalidExtractException(ApiError.builder()
+                .path(getCurrentRequest())
+                .error(message)
+                .timestamp(LocalDateTime.now())
+                .build());
     }
 
 }

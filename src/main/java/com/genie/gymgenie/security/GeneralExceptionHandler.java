@@ -2,8 +2,10 @@ package com.genie.gymgenie.security;
 
 import com.genie.gymgenie.security.exception.AuthServiceException;
 import com.genie.gymgenie.security.exception.EmailSenderException;
+import com.genie.gymgenie.security.exception.InvalidExtractException;
 import com.genie.gymgenie.security.exception.ResourceNotFoundException;
 import com.genie.gymgenie.security.payload.ApiError;
+import dev.ai4j.openai4j.OpenAiHttpException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +32,20 @@ public class GeneralExceptionHandler {
         return new ResponseEntity<>(ApiError.builder()
                 .path(request.getRequestURI())
                 .error(e.getMessage())
+                .timestamp(LocalDateTime.now())
+                .build(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(InvalidExtractException.class)
+    public ResponseEntity<ApiError> handleInvalidExtractException(InvalidExtractException ex){
+        return new ResponseEntity<>(ex.getApiError(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(OpenAiHttpException.class)
+    public ResponseEntity<ApiError> handleOpenAiHttpException(OpenAiHttpException ex){
+        return new ResponseEntity<>(ApiError.builder()
+                .path(getCurrentRequest())
+                .error(ex.getMessage())
                 .timestamp(LocalDateTime.now())
                 .build(), HttpStatus.INTERNAL_SERVER_ERROR);
     }

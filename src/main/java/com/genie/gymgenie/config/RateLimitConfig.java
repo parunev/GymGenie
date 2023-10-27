@@ -26,4 +26,12 @@ public class RateLimitConfig {
                 .addLimit(limit)
                 .build();
     }
+
+    @Bean
+    public Bucket oneBucket() {
+        Bandwidth limit = Bandwidth.classic(1, Refill.greedy(1, Duration.ofSeconds(30)));
+        return Bucket.builder()
+                .addLimit(limit)
+                .build();
+    }
 }

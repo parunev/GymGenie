@@ -1,6 +1,5 @@
-package com.genie.gymgenie.models.diet;
+package com.genie.gymgenie.models;
 
-import com.genie.gymgenie.models.Workout;
 import com.genie.gymgenie.models.commons.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;

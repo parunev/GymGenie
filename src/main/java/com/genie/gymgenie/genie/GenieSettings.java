@@ -16,6 +16,7 @@ import dev.langchain4j.store.embedding.EmbeddingStore;
 import dev.langchain4j.store.embedding.EmbeddingStoreIngestor;
 import dev.langchain4j.store.embedding.inmemory.InMemoryEmbeddingStore;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
@@ -32,7 +33,7 @@ public class GenieSettings {
 
     @Bean
     GenieAgent workoutAgent(ChatLanguageModel chatLanguageModel,
-                            Retriever<TextSegment> retriever) {
+                            @Qualifier("exerciseRetriever") Retriever<TextSegment> retriever) {
         return AiServices.builder(GenieAgent.class)
                 .chatLanguageModel(chatLanguageModel)
                 .chatMemory(MessageWindowChatMemory.withMaxMessages(1000))
@@ -49,7 +50,27 @@ public class GenieSettings {
     }
 
     @Bean
-    Retriever<TextSegment> retriever(EmbeddingStore<TextSegment> embeddingStore, EmbeddingModel embeddingModel) {
+    GenieAgent foodNounAgent(ChatLanguageModel chatLanguageModel,
+                             @Qualifier("foodRetriever") Retriever<TextSegment> retriever){
+        return AiServices.builder(GenieAgent.class)
+                .chatLanguageModel(chatLanguageModel)
+                .chatMemory(MessageWindowChatMemory.withMaxMessages(1000))
+                .retriever(retriever)
+                .build();
+    }
+
+    @Bean
+    @Qualifier("exerciseRetriever")
+    Retriever<TextSegment> exerciseRetriever(@Qualifier("exerciseStore") EmbeddingStore<TextSegment> embeddingStore, EmbeddingModel embeddingModel) {
+        int maxResultsRetrieved = 1;
+        double minScore = 0.6;
+
+        return EmbeddingStoreRetriever.from(embeddingStore, embeddingModel, maxResultsRetrieved, minScore);
+    }
+
+    @Bean
+    @Qualifier("foodRetriever")
+    Retriever<TextSegment> foodRetriever(@Qualifier("foodStore") EmbeddingStore<TextSegment> embeddingStore, EmbeddingModel embeddingModel) {
         int maxResultsRetrieved = 1;
         double minScore = 0.6;
 
@@ -62,10 +83,30 @@ public class GenieSettings {
     }
 
     @Bean
-    EmbeddingStore<TextSegment> embeddingStore(EmbeddingModel embeddingModel, ResourceLoader resourceLoader) throws IOException {
+    @Qualifier("exerciseStore")
+    EmbeddingStore<TextSegment> exerciseStore(EmbeddingModel embeddingModel, ResourceLoader resourceLoader) throws IOException {
         EmbeddingStore<TextSegment> embeddingStore = new InMemoryEmbeddingStore<>();
 
         Resource resource = resourceLoader.getResource("classpath:exercises.xlsx");
+        Document document = loadDocument(resource.getFile().toPath());
+
+        DocumentSplitter documentSplitter = DocumentSplitters.recursive(100, 0, new OpenAiTokenizer(GPT_3_5_TURBO));
+        EmbeddingStoreIngestor ingestor = EmbeddingStoreIngestor.builder()
+                .documentSplitter(documentSplitter)
+                .embeddingModel(embeddingModel)
+                .embeddingStore(embeddingStore)
+                .build();
+        ingestor.ingest(document);
+
+        return embeddingStore;
+    }
+
+    @Bean
+    @Qualifier("foodStore")
+    EmbeddingStore<TextSegment> foodStore(EmbeddingModel embeddingModel, ResourceLoader resourceLoader) throws IOException {
+        EmbeddingStore<TextSegment> embeddingStore = new InMemoryEmbeddingStore<>();
+
+        Resource resource = resourceLoader.getResource("classpath:food.txt");
         Document document = loadDocument(resource.getFile().toPath());
 
         DocumentSplitter documentSplitter = DocumentSplitters.recursive(100, 0, new OpenAiTokenizer(GPT_3_5_TURBO));

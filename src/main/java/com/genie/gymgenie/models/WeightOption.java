@@ -1,11 +1,12 @@
-package com.genie.gymgenie.models.diet;
+package com.genie.gymgenie.models;
 
 import com.genie.gymgenie.models.commons.BaseEntity;
 import com.genie.gymgenie.models.enums.diet.WeightOptionType;
 import jakarta.persistence.*;
 import lombok.*;
 
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
