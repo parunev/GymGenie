@@ -1,11 +1,10 @@
 package com.genie.gymgenie.controller;
 
-import com.genie.gymgenie.config.RateLimitConfig;
 import com.genie.gymgenie.models.payload.user.profile.ChangeEmailRequest;
 import com.genie.gymgenie.models.payload.user.profile.ChangePasswordRequest;
-import com.genie.gymgenie.security.GenieLogger;
 import com.genie.gymgenie.security.payload.ApiResponse;
 import com.genie.gymgenie.service.UserService;
+import com.genie.gymgenie.utils.RateLimitExecutor;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import lombok.RequiredArgsConstructor;
@@ -14,41 +13,26 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import static com.genie.gymgenie.security.CurrentUser.getCurrentUserDetails;
-import static com.genie.gymgenie.utils.ExceptionThrower.TOO_MANY_REQUEST_MSG;
-import static com.genie.gymgenie.utils.ExceptionThrower.authException;
-
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/genie/v1/user")
 public class UserController {
 
     private final UserService userService;
-    private final RateLimitConfig rateLimit;
-    private final GenieLogger genie = new GenieLogger(UserController.class);
+    private final RateLimitExecutor executor;
 
     @PreAuthorize("hasRole('ROLE_USER')")
     @PostMapping("/password/change")
     public ResponseEntity<ApiResponse> changeUserPassword(@RequestBody ChangePasswordRequest request) {
-
-        if (rateLimit.fiveBucket().tryConsume(1)) {
-            genie.info("Updating the user email");
-            return new ResponseEntity<>(userService.changeUserPassword(request), HttpStatus.OK);
-        }
-
-        throw authException(TOO_MANY_REQUEST_MSG.formatted(getCurrentUserDetails().getUsername()), HttpStatus.TOO_MANY_REQUESTS);
+        return new ResponseEntity<>(executor.executeUser(() -> userService.changeUserPassword(request),
+                "Change password"), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('ROLE_USER')")
     @PostMapping("/email/change")
     public ResponseEntity<ApiResponse> changeUserEmail(@RequestBody ChangeEmailRequest request) {
-
-        if (rateLimit.fiveBucket().tryConsume(1)) {
-            genie.info("Updating the user email");
-            return new ResponseEntity<>(userService.changeUserEmail(request), HttpStatus.OK);
-        }
-
-        throw authException(TOO_MANY_REQUEST_MSG.formatted(getCurrentUserDetails().getUsername()), HttpStatus.TOO_MANY_REQUESTS);
+        return new ResponseEntity<>(executor.executeUser(() -> userService.changeUserEmail(request),
+                "Change email"), HttpStatus.OK);
     }
 
     @GetMapping("/change-email/confirm")
@@ -58,7 +42,7 @@ public class UserController {
 
             @Parameter(in = ParameterIn.QUERY, name = "email", description = "The new (hashed)email address to be associated with the user's account.")
             @RequestParam("e") String email){
-        genie.info("Request to verify the change of the user email");
-        return new ResponseEntity<>(userService.verifyChangeUserEmail(token, email), HttpStatus.OK);
+        return new ResponseEntity<>(executor.executeUser(() -> userService.verifyChangeUserEmail(token, email),
+                "Verify change email"), HttpStatus.OK);
     }
 }

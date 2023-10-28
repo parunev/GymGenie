@@ -97,9 +97,9 @@ public class JwtFilter extends OncePerRequestFilter {
 
                 filterChain.doFilter(request, response);
             }
-        } catch (ExpiredJwtException | IOException | ServletException exception) {
-            genie.error(DEFAULT_MESSAGE, exception, exception.getMessage());
-
+        } catch (ExpiredJwtException | IOException | ServletException | JwtValidationException exception) {
+            genie.error(DEFAULT_MESSAGE, exception, exception.getCause());
+            response.setContentType("application/json");
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
             response.getWriter().write(objectMapper.writeValueAsString(ApiError.builder()
                     .path(request.getRequestURI())
@@ -107,16 +107,9 @@ public class JwtFilter extends OncePerRequestFilter {
                     .timestamp(LocalDateTime.now())
                     .build()));
 
-        } catch (JwtValidationException e){
-            genie.error(DEFAULT_MESSAGE, e, e.getMessage());
-            response.setStatus(HttpStatus.UNAUTHORIZED.value());
-            response.getWriter().write(objectMapper.writeValueAsString(ApiError.builder()
-                    .path(request.getRequestURI())
-                    .error(e.getMessage())
-                    .build()));
-
         } catch (ResourceNotFoundException e){
             genie.error(DEFAULT_MESSAGE, e, e.getApiError().getError());
+            response.setContentType("application/json");
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
             response.getWriter().write(objectMapper.writeValueAsString(ApiError.builder()
                     .path(request.getRequestURI())

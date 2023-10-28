@@ -11,6 +11,7 @@ import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.jwt.JwtValidationException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.client.HttpClientErrorException;
@@ -34,6 +35,15 @@ public class GeneralExceptionHandler {
                 .error(e.getMessage())
                 .timestamp(LocalDateTime.now())
                 .build(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(JwtValidationException.class)
+    public ResponseEntity<ApiError> handleJwtValidationException(JwtValidationException ex){
+        return new ResponseEntity<>(ApiError.builder()
+                .path(getCurrentRequest())
+                .error(ex.getMessage())
+                .timestamp(LocalDateTime.now())
+                .build(), HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(InvalidExtractException.class)

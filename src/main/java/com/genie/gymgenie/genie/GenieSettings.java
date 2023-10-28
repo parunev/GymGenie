@@ -31,30 +31,31 @@ import static dev.langchain4j.model.openai.OpenAiModelName.GPT_3_5_TURBO;
 @RequiredArgsConstructor
 public class GenieSettings {
 
+    private static final int MAX_MESSAGES = 1000;
+    private static final int MAX_RESULTS_RETRIEVED = 1;
+    private static final double MIN_SCORE = 0.6;
+
     @Bean
     GenieAgent workoutAgent(ChatLanguageModel chatLanguageModel,
                             @Qualifier("exerciseRetriever") Retriever<TextSegment> retriever) {
-        return AiServices.builder(GenieAgent.class)
-                .chatLanguageModel(chatLanguageModel)
-                .chatMemory(MessageWindowChatMemory.withMaxMessages(1000))
-                .retriever(retriever)
-                .build();
+        return createGenieAgent(chatLanguageModel, retriever);
     }
 
     @Bean
-    GenieAgent calorieAgent(ChatLanguageModel chatLanguageModel){
-        return AiServices.builder(GenieAgent.class)
-                .chatLanguageModel(chatLanguageModel)
-                .chatMemory(MessageWindowChatMemory.withMaxMessages(1000))
-                .build();
+    GenieAgent calorieAgent(ChatLanguageModel chatLanguageModel) {
+        return createGenieAgent(chatLanguageModel, null);
     }
 
     @Bean
     GenieAgent foodNounAgent(ChatLanguageModel chatLanguageModel,
-                             @Qualifier("foodRetriever") Retriever<TextSegment> retriever){
+                             @Qualifier("foodRetriever") Retriever<TextSegment> retriever) {
+        return createGenieAgent(chatLanguageModel, retriever);
+    }
+
+    private GenieAgent createGenieAgent(ChatLanguageModel chatLanguageModel, Retriever<TextSegment> retriever) {
         return AiServices.builder(GenieAgent.class)
                 .chatLanguageModel(chatLanguageModel)
-                .chatMemory(MessageWindowChatMemory.withMaxMessages(1000))
+                .chatMemory(MessageWindowChatMemory.withMaxMessages(MAX_MESSAGES))
                 .retriever(retriever)
                 .build();
     }
@@ -62,19 +63,17 @@ public class GenieSettings {
     @Bean
     @Qualifier("exerciseRetriever")
     Retriever<TextSegment> exerciseRetriever(@Qualifier("exerciseStore") EmbeddingStore<TextSegment> embeddingStore, EmbeddingModel embeddingModel) {
-        int maxResultsRetrieved = 1;
-        double minScore = 0.6;
-
-        return EmbeddingStoreRetriever.from(embeddingStore, embeddingModel, maxResultsRetrieved, minScore);
+        return createRetriever(embeddingStore, embeddingModel);
     }
 
     @Bean
     @Qualifier("foodRetriever")
     Retriever<TextSegment> foodRetriever(@Qualifier("foodStore") EmbeddingStore<TextSegment> embeddingStore, EmbeddingModel embeddingModel) {
-        int maxResultsRetrieved = 1;
-        double minScore = 0.6;
+        return createRetriever(embeddingStore, embeddingModel);
+    }
 
-        return EmbeddingStoreRetriever.from(embeddingStore, embeddingModel, maxResultsRetrieved, minScore);
+    private Retriever<TextSegment> createRetriever(EmbeddingStore<TextSegment> embeddingStore, EmbeddingModel embeddingModel) {
+        return EmbeddingStoreRetriever.from(embeddingStore, embeddingModel, MAX_RESULTS_RETRIEVED, MIN_SCORE);
     }
 
     @Bean
@@ -85,37 +84,28 @@ public class GenieSettings {
     @Bean
     @Qualifier("exerciseStore")
     EmbeddingStore<TextSegment> exerciseStore(EmbeddingModel embeddingModel, ResourceLoader resourceLoader) throws IOException {
-        EmbeddingStore<TextSegment> embeddingStore = new InMemoryEmbeddingStore<>();
-
-        Resource resource = resourceLoader.getResource("classpath:exercises.xlsx");
-        Document document = loadDocument(resource.getFile().toPath());
-
-        DocumentSplitter documentSplitter = DocumentSplitters.recursive(100, 0, new OpenAiTokenizer(GPT_3_5_TURBO));
-        EmbeddingStoreIngestor ingestor = EmbeddingStoreIngestor.builder()
-                .documentSplitter(documentSplitter)
-                .embeddingModel(embeddingModel)
-                .embeddingStore(embeddingStore)
-                .build();
-        ingestor.ingest(document);
-
-        return embeddingStore;
+        return createEmbeddingStore(embeddingModel, resourceLoader, "classpath:exercises.xlsx");
     }
 
     @Bean
     @Qualifier("foodStore")
     EmbeddingStore<TextSegment> foodStore(EmbeddingModel embeddingModel, ResourceLoader resourceLoader) throws IOException {
+        return createEmbeddingStore(embeddingModel, resourceLoader, "classpath:food.txt");
+    }
+
+    private EmbeddingStore<TextSegment> createEmbeddingStore(EmbeddingModel embeddingModel, ResourceLoader resourceLoader, String resourcePath) throws IOException {
         EmbeddingStore<TextSegment> embeddingStore = new InMemoryEmbeddingStore<>();
 
-        Resource resource = resourceLoader.getResource("classpath:food.txt");
+        Resource resource = resourceLoader.getResource(resourcePath);
         Document document = loadDocument(resource.getFile().toPath());
 
         DocumentSplitter documentSplitter = DocumentSplitters.recursive(100, 0, new OpenAiTokenizer(GPT_3_5_TURBO));
-        EmbeddingStoreIngestor ingestor = EmbeddingStoreIngestor.builder()
+        EmbeddingStoreIngestor embeddingStoreIngestor = EmbeddingStoreIngestor.builder()
                 .documentSplitter(documentSplitter)
                 .embeddingModel(embeddingModel)
                 .embeddingStore(embeddingStore)
                 .build();
-        ingestor.ingest(document);
+        embeddingStoreIngestor.ingest(document);
 
         return embeddingStore;
     }

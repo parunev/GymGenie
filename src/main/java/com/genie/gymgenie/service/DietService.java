@@ -97,6 +97,7 @@ public class DietService {
         List<RecipeDto> recipes = new ArrayList<>();
 
         for (RecipeId recipeId : selectedRecipeIds){
+            genie.info("Getting recipe with id {}", recipeId.getId());
             String url = baseUrl + "/informationBulk?apiKey=" + apiKey
                     + "&ids=" + recipeId.getId()
                     + "&includeNutrition=false";
@@ -142,6 +143,7 @@ public class DietService {
                 e.printStackTrace();
             }
         }
+        genie.info("Recipes saved successfully");
         return recipes;
     }
 
@@ -231,6 +233,7 @@ public class DietService {
 
         List<RecipeId> recipeIds = new ArrayList<>();
         for (FoodNoun foodNoun : foodNouns) {
+            genie.info("Getting recipe ids for food noun {}", foodNoun.getName());
             StringBuilder url = new StringBuilder();
             url.append(baseUrl).append("/complexSearch").append("?apiKey=").append(apiKey);
             url.append("&query=").append(foodNoun.getName());

@@ -190,6 +190,7 @@ public class AuthService {
                             genie.warn("Token not found or is already used!");
                             throw resourceException("Token not found or is already used!", HttpStatus.NOT_FOUND);
                         });
+        tokenRepository.updateConfirmedAt(token, LocalDateTime.now());
 
         User user = passwordToken.getUser();
         user.setPassword(request.getPassword());
