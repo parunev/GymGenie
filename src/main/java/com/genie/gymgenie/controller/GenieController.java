@@ -55,7 +55,7 @@ public class GenieController {
 
     @PreAuthorize("hasRole('ROLE_USER')")
     @GetMapping("/recipe/{workoutId}")
-    public ResponseEntity<RecipeResponse> generateDiet(@RequestBody RecipeRequest request, @PathVariable("workoutId") Long workoutId){
+    public ResponseEntity<RecipeResponse> generateRecipes(@RequestBody RecipeRequest request, @PathVariable("workoutId") Long workoutId){
         return new ResponseEntity<>(
                 executor.executeGenie(() -> recipeService.generateDiet(request, workoutId),
                         "Diet generation", "to generate a diet 30 seconds"), HttpStatus.OK);
