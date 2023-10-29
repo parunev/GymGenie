@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.genie.gymgenie.genie.GenieAgent;
 import com.genie.gymgenie.models.*;
+import com.genie.gymgenie.models.enums.diet.Cuisine;
+import com.genie.gymgenie.models.enums.diet.Intolerance;
 import com.genie.gymgenie.models.payload.diet.DietRequest;
 import com.genie.gymgenie.models.payload.diet.DietResponse;
 import com.genie.gymgenie.models.payload.diet.base.FoodNoun;
@@ -21,10 +23,12 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.genie.gymgenie.genie.UserPrompts.dietPrompt;
 import static com.genie.gymgenie.security.CurrentUser.getCurrentUserDetails;
+import static com.genie.gymgenie.security.ErrorMessages.*;
 import static com.genie.gymgenie.utils.ExceptionThrower.extractException;
 import static com.genie.gymgenie.utils.ExceptionThrower.resourceException;
 import static com.genie.gymgenie.utils.JsonExtract.extractFoodNounResponseFromJSON;
@@ -55,25 +59,25 @@ public class DietService {
         User user = userRepository.findByUsername(getCurrentUserDetails().getUsername())
                 .orElseThrow(() -> {
                     genie.warn("User with username {} not found", getCurrentUserDetails().getUsername());
-                    throw resourceException("No account associated with this username(%s) found.".formatted(getCurrentUserDetails().getUsername()), HttpStatus.NOT_FOUND);
+                    throw resourceException(NO_ACCOUNT_FOUND.formatted(getCurrentUserDetails().getUsername()), HttpStatus.NOT_FOUND);
                 });
 
         Workout workout = workoutRepository.findByIdAndUser(workoutId, user)
                 .orElseThrow(() -> {
                     genie.warn("Workout with id {} not found", workoutId);
-                    throw resourceException("No workout with id(%s) found.".formatted(workoutId), HttpStatus.NOT_FOUND);
+                    throw resourceException(NO_WORKOUT_FOUND.formatted(workoutId), HttpStatus.NOT_FOUND);
                 });
 
         CalorieIntake calorieIntake = calorieIntakeRepository.findByWorkout(workout)
                 .orElseThrow(() -> {
                     genie.warn("CalorieIntake for workout with id {} not found", workoutId);
-                    throw resourceException("No calorie intake for workout with id(%s) found.".formatted(workoutId), HttpStatus.NOT_FOUND);
+                    throw resourceException(NO_CALORIE_INTAKE_FOUND.formatted(workoutId), HttpStatus.NOT_FOUND);
                 });
 
         WeightOption weightOption = weightOptionRepository.findByCalorieIntakeAndName(calorieIntake, dietRequest.getWeightOptionType())
                 .orElseThrow(() -> {
                     genie.warn("WeightOption with name {} not found", dietRequest.getWeightOptionType());
-                    throw resourceException("No weight option with name(%s) found.".formatted(dietRequest.getWeightOptionType()), HttpStatus.NOT_FOUND);
+                    throw resourceException(NO_WEIGHT_OPTION_FOUND.formatted(dietRequest.getWeightOptionType()), HttpStatus.NOT_FOUND);
                 });
 
         String prompt = dietPrompt(workout, weightOption, dietRequest);
@@ -82,7 +86,7 @@ public class DietService {
 
         if (foodNouns == null || foodNouns.isEmpty()) {
             genie.warn("No food nouns found for prompt {}", prompt);
-            throw resourceException("Something went wrong with the recipe generation. Please contact us if the error persists!", HttpStatus.BAD_REQUEST);
+            throw resourceException(FOOD_NOUN_PROBLEM, HttpStatus.BAD_REQUEST);
         }
 
         List<RecipeId> recipeIds = getRecipeIds(foodNouns, dietRequest, weightOption);
@@ -210,50 +214,16 @@ public class DietService {
     }
 
     private List<RecipeId> getRecipeIds(List<FoodNoun> foodNouns, DietRequest request, WeightOption weightOption) {
-        String cuisines = "";
-        if (request.getPreferredCuisines() != null){
-            cuisines = request.getPreferredCuisines().stream()
-                    .map(cuisine -> cuisine.getDisplayName().toLowerCase())
-                    .collect(Collectors.joining(","));
-        }
-
-        String dislikedCuisines = "";
-        if (request.getDislikedCuisines() != null){
-            dislikedCuisines = request.getDislikedCuisines().stream()
-                    .map(cuisine -> cuisine.getDisplayName().toLowerCase())
-                    .collect(Collectors.joining(","));
-        }
-
-        String intolerances = "";
-        if (request.getIntolerance() != null){
-            intolerances = request.getIntolerance().stream()
-                    .map(intolerance -> intolerance.getDisplayName().toLowerCase())
-                    .collect(Collectors.joining(","));
-        }
+        String cuisines = createCommaSeparatedString(request.getPreferredCuisines(), Cuisine::getDisplayName);
+        String dislikedCuisines = createCommaSeparatedString(request.getDislikedCuisines(), Cuisine::getDisplayName);
+        String intolerances = createCommaSeparatedString(request.getIntolerance(), Intolerance::getDisplayName);
 
         List<RecipeId> recipeIds = new ArrayList<>();
         for (FoodNoun foodNoun : foodNouns) {
             genie.info("Getting recipe ids for food noun {}", foodNoun.getName());
-            StringBuilder url = new StringBuilder();
-            url.append(baseUrl).append("/complexSearch").append("?apiKey=").append(apiKey);
-            url.append("&query=").append(foodNoun.getName());
-            if (!cuisines.isEmpty()) {
-                url.append("&cuisine=").append(cuisines);
-            }
-            if (!dislikedCuisines.isEmpty()) {
-                url.append("&excludeCuisine=").append(dislikedCuisines);
-            }
-            if (!intolerances.isEmpty()) {
-                url.append("&intolerances=").append(intolerances);
-            }
-            url.append("&instructionsRequired=true");
-            url.append("&addRecipeInformation=true");
-            url.append("&minCalories=").append(weightOption.getMinCaloriesPerMeal());
-            url.append("&maxCalories=").append(weightOption.getMaxCaloriesPerMeal());
-            url.append("&number=2");
 
-            genie.info("URL: {}", url.toString());
-            ResponseEntity<String> response = restTemplate.getForEntity(url.toString(), String.class);
+            String url = constructUrl(foodNoun, cuisines, dislikedCuisines, intolerances, weightOption);
+            ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
 
             try{
                 ObjectMapper objectMapper = new ObjectMapper();
@@ -271,5 +241,38 @@ public class DietService {
         }
 
         return recipeIds;
+    }
+
+    private <T> String createCommaSeparatedString(List<T> list, Function<T, String> mapper) {
+        if (list == null || list.isEmpty()) {
+            return "";
+        }
+
+        return list.stream()
+                .map(item -> mapper.apply(item).toLowerCase())
+                .collect(Collectors.joining(","));
+    }
+
+    private String constructUrl(FoodNoun foodNoun, String cuisines, String dislikedCuisines, String intolerances, WeightOption weightOption){
+        StringBuilder url = new StringBuilder();
+        url.append(baseUrl).append("/complexSearch").append("?apiKey=").append(apiKey);
+        url.append("&query=").append(foodNoun.getName());
+        if (!cuisines.isEmpty()) {
+            url.append("&cuisine=").append(cuisines);
+        }
+        if (!dislikedCuisines.isEmpty()) {
+            url.append("&excludeCuisine=").append(dislikedCuisines);
+        }
+        if (!intolerances.isEmpty()) {
+            url.append("&intolerances=").append(intolerances);
+        }
+        url.append("&instructionsRequired=true");
+        url.append("&addRecipeInformation=true");
+        url.append("&minCalories=").append(weightOption.getMinCaloriesPerMeal());
+        url.append("&maxCalories=").append(weightOption.getMaxCaloriesPerMeal());
+        url.append("&number=2");
+
+        genie.info("URL: {}", url.toString());
+        return url.toString();
     }
 }

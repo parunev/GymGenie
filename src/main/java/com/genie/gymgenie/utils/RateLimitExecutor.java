@@ -50,6 +50,13 @@ public class RateLimitExecutor {
         if (rateLimit.oneBucket().tryConsume(1)){
             genie.info(operationDescription + " request received");
             return action.get();
+        } else if (operationDescription.equals("Workout retrieval")){
+            if (rateLimit.fiveBucket().tryConsume(1)){
+                genie.info(operationDescription + " request received");
+                return action.get();
+            } else {
+                throw authException(TOO_MANY_REQUESTS.formatted(message), HttpStatus.TOO_MANY_REQUESTS);
+            }
         } else {
             throw authException(TOO_MANY_REQUESTS.formatted(message), HttpStatus.TOO_MANY_REQUESTS);
         }

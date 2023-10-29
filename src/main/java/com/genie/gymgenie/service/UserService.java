@@ -26,6 +26,8 @@ import org.springframework.validation.annotation.Validated;
 import java.time.LocalDateTime;
 
 import static com.genie.gymgenie.security.CurrentUser.getCurrentUserDetails;
+import static com.genie.gymgenie.security.ErrorMessages.NO_ACCOUNT_FOUND;
+import static com.genie.gymgenie.security.ErrorMessages.NO_TOKEN_FOUND;
 import static com.genie.gymgenie.utils.ResponseBuilder.response;
 import static com.genie.gymgenie.utils.EnDec.enDecEmail;
 import static com.genie.gymgenie.utils.ExceptionThrower.authException;
@@ -117,7 +119,7 @@ public class UserService implements UserDetailsService {
         Token confirmationToken = tokenRepository.findByTokenValueAndTokenType(token, TokenType.CONFIRMATION)
                 .orElseThrow(() -> {
                     genie.warn("Token not found");
-                    throw authException("Token not found. Please ensure you have the correct token or request a new one.", HttpStatus.NOT_FOUND);
+                    throw authException(NO_TOKEN_FOUND, HttpStatus.NOT_FOUND);
                 });
 
         isValidToken(confirmationToken);
@@ -139,7 +141,7 @@ public class UserService implements UserDetailsService {
         return userRepository.findByUsername(getCurrentUserDetails().getUsername())
                 .orElseThrow(() -> {
                     genie.warn("User with username {} not found", getCurrentUserDetails().getUsername());
-                    throw resourceException("No account associated with this username(%s) found.".formatted(getCurrentUserDetails().getUsername()), HttpStatus.NOT_FOUND);
+                    throw resourceException(NO_ACCOUNT_FOUND.formatted(getCurrentUserDetails().getUsername()), HttpStatus.NOT_FOUND);
                 });
     }
 }

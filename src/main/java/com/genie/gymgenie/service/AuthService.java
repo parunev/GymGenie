@@ -36,6 +36,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import static com.genie.gymgenie.security.ErrorMessages.*;
 import static com.genie.gymgenie.utils.ExceptionThrower.authException;
 import static com.genie.gymgenie.utils.ExceptionThrower.resourceException;
 import static com.genie.gymgenie.utils.HealthCalculator.*;
@@ -93,7 +94,7 @@ public class AuthService {
         Token registrationToken = tokenRepository.findByTokenValueAndTokenType(token, TokenType.CONFIRMATION)
                 .orElseThrow(() -> {
                     genie.warn("Token not found");
-                    throw authException("Token not found. Please ensure you have the correct token or request a new one.", HttpStatus.NOT_FOUND);
+                    throw authException(NO_TOKEN_FOUND, HttpStatus.NOT_FOUND);
                 });
 
         isValidToken(registrationToken);
@@ -101,7 +102,7 @@ public class AuthService {
 
         if (registrationToken.getUser().isEnabled()) {
             genie.warn("User already enabled");
-            throw authException("The user associated with this token is already enabled", HttpStatus.BAD_REQUEST);
+            throw authException(ALREADY_ENABLED, HttpStatus.BAD_REQUEST);
         }
 
         userRepository.enableAppUser(registrationToken.getUser().getEmail());
@@ -114,11 +115,11 @@ public class AuthService {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> {
                     genie.warn("User with the provided email not found");
-                    throw resourceException("User with the provided email not found. Please ensure you have created an account", HttpStatus.NOT_FOUND);
+                    throw resourceException(NO_EMAIL_FOUND, HttpStatus.NOT_FOUND);
                 });
 
         if (user.isEnabled()){
-            throw authException("Your account is already enabled.You can log in now.", HttpStatus.BAD_REQUEST);
+            throw authException(ALREADY_ENABLED, HttpStatus.BAD_REQUEST);
         }
 
         List<Token> registrationTokens = tokenRepository.findAllByUserEmailAndTokenType(user.getEmail(), TokenType.CONFIRMATION);
@@ -143,7 +144,7 @@ public class AuthService {
         User user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> {
                     genie.warn("User with the provided username not found");
-                    throw resourceException("User with the provided username not found. Please ensure you have entered the correct username", HttpStatus.NOT_FOUND);
+                    throw resourceException(NO_ACCOUNT_FOUND.formatted(request.getUsername()), HttpStatus.NOT_FOUND);
                 });
 
         if (!user.isEnabled()){
@@ -162,7 +163,7 @@ public class AuthService {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> {
                     genie.warn("User with the provided email not found");
-                    throw resourceException("User with the provided email not found. Please ensure you have created an account", HttpStatus.NOT_FOUND);
+                    throw resourceException(NO_EMAIL_FOUND, HttpStatus.NOT_FOUND);
                 });
 
         Token passwordToken = Token.builder()
@@ -188,7 +189,7 @@ public class AuthService {
                                 && reset.getExpires().isAfter(LocalDateTime.now())))
                 .orElseThrow(() -> {
                             genie.warn("Token not found or is already used!");
-                            throw resourceException("Token not found or is already used!", HttpStatus.NOT_FOUND);
+                            throw resourceException(NO_TOKEN_FOUND, HttpStatus.NOT_FOUND);
                         });
         tokenRepository.updateConfirmedAt(token, LocalDateTime.now());
 
@@ -220,7 +221,7 @@ public class AuthService {
             User user = userRepository.findByEmail(userEmail)
                     .orElseThrow(() -> {
                         genie.warn("User with the provided email not found");
-                        throw resourceException("User with the provided email not found. Please ensure you have created an account", HttpStatus.NOT_FOUND);
+                        throw resourceException(NO_EMAIL_FOUND, HttpStatus.NOT_FOUND);
                     });
 
             if (jwtUtils.isValid(refreshToken, user)) {
@@ -244,8 +245,8 @@ public class AuthService {
         }
 
         if (token == null){
-            genie.warn("Refresh token was not created.");
-            throw authException("Refresh token was not created. Pleas try again!", HttpStatus.UNAUTHORIZED);
+            genie.warn("Access token was not created.");
+            throw authException("Access token was not created. Pleas try again!", HttpStatus.UNAUTHORIZED);
         }
 
         return responseLogin(token.getTokenValue(), refreshToken, "Token refreshed successfully!");
