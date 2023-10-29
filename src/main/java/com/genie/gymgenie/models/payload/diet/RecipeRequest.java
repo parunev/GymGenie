@@ -9,7 +9,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class DietRequest {
+public class RecipeRequest {
 
     private WeightOptionType weightOptionType;
     private List<Cuisine> preferredCuisines;

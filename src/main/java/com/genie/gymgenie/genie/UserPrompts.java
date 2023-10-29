@@ -6,7 +6,7 @@ import com.genie.gymgenie.models.enums.user.Goal;
 import com.genie.gymgenie.models.enums.user.HealthIssues;
 import com.genie.gymgenie.models.enums.user.Motivation;
 import com.genie.gymgenie.models.enums.workout.WorkoutAreas;
-import com.genie.gymgenie.models.payload.diet.DietRequest;
+import com.genie.gymgenie.models.payload.diet.RecipeRequest;
 import com.genie.gymgenie.models.payload.workout.WorkoutRequest;
 import com.genie.gymgenie.security.GenieLogger;
 import lombok.AccessLevel;
@@ -137,7 +137,7 @@ public class UserPrompts {
         return prompt.toString();
     }
 
-    public static String dietPrompt(Workout workout, WeightOption weightOption, DietRequest dietRequest) {
+    public static String recipesPrompt(Workout workout, WeightOption weightOption, RecipeRequest recipeRequest) {
         StringBuilder prompt = new StringBuilder();
         prompt.append("My workout objective is %s with durations of %s minutes."
                 .formatted(workout.getObjective().getObjectiveName(), workout.getDuration())).append("\n");
@@ -161,26 +161,26 @@ public class UserPrompts {
         prompt.append("With maximum %s calories and minimum %s calories."
                 .formatted(weightOption.getMaxCaloriesPerMeal(), weightOption.getMinCaloriesPerMeal())).append("\n");
 
-        if (dietRequest.getPreferredCuisines() != null){
+        if (recipeRequest.getPreferredCuisines() != null){
             prompt.append("My diet plan for today needs to include cuisines from %s."
-                    .formatted(dietRequest.getPreferredCuisines())).append("\n");
+                    .formatted(recipeRequest.getPreferredCuisines())).append("\n");
         }
 
-        if(dietRequest.getDislikedCuisines() != null){
+        if(recipeRequest.getDislikedCuisines() != null){
             prompt.append("And needs to exclude cuisines from %s."
-                    .formatted(dietRequest.getDislikedCuisines())).append("\n");
+                    .formatted(recipeRequest.getDislikedCuisines())).append("\n");
         }
 
-        if (dietRequest.getDiet() != null){
+        if (recipeRequest.getDiet() != null){
             prompt.append("Currently I follow this diet %s and the diet description is the following:"
-                    .formatted(dietRequest.getDiet().getDisplayName())).append("\n");
+                    .formatted(recipeRequest.getDiet().getDisplayName())).append("\n");
             prompt.append("%s"
-                    .formatted(dietRequest.getDiet().getDescription()));
+                    .formatted(recipeRequest.getDiet().getDescription()));
         }
 
-        if(dietRequest.getIntolerance() != null){
+        if(recipeRequest.getIntolerance() != null){
             prompt.append("I have intolerances toward %s."
-                    .formatted(dietRequest.getIntolerance())).append("\n");
+                    .formatted(recipeRequest.getIntolerance())).append("\n");
         }
 
         prompt.append("Please provide me with 5 food nouns that I can eat today.");

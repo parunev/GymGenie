@@ -2,11 +2,11 @@ package com.genie.gymgenie.controller;
 
 import com.genie.gymgenie.models.enums.workout.Objective;
 import com.genie.gymgenie.models.enums.workout.WorkoutAreas;
-import com.genie.gymgenie.models.payload.diet.DietRequest;
-import com.genie.gymgenie.models.payload.diet.DietResponse;
+import com.genie.gymgenie.models.payload.diet.RecipeRequest;
+import com.genie.gymgenie.models.payload.diet.RecipeResponse;
 import com.genie.gymgenie.models.payload.workout.WorkoutRequest;
 import com.genie.gymgenie.models.payload.workout.WorkoutResponse;
-import com.genie.gymgenie.service.DietService;
+import com.genie.gymgenie.service.RecipeService;
 import com.genie.gymgenie.service.WorkoutService;
 import com.genie.gymgenie.utils.RateLimitExecutor;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.*;
 public class GenieController {
 
     private final WorkoutService workoutService;
-    private final DietService dietService;
+    private final RecipeService recipeService;
     private final RateLimitExecutor executor;
 
     @PreAuthorize("hasRole('ROLE_USER')")
@@ -54,10 +54,10 @@ public class GenieController {
     }
 
     @PreAuthorize("hasRole('ROLE_USER')")
-    @GetMapping("/diet/{workoutId}")
-    public ResponseEntity<DietResponse> generateDiet(@RequestBody DietRequest request, @PathVariable("workoutId") Long workoutId){
+    @GetMapping("/recipe/{workoutId}")
+    public ResponseEntity<RecipeResponse> generateDiet(@RequestBody RecipeRequest request, @PathVariable("workoutId") Long workoutId){
         return new ResponseEntity<>(
-                executor.executeGenie(() -> dietService.generateDiet(request, workoutId),
+                executor.executeGenie(() -> recipeService.generateDiet(request, workoutId),
                         "Diet generation", "to generate a diet 30 seconds"), HttpStatus.OK);
     }
 }

@@ -7,8 +7,8 @@ import com.genie.gymgenie.genie.GenieAgent;
 import com.genie.gymgenie.models.*;
 import com.genie.gymgenie.models.enums.diet.Cuisine;
 import com.genie.gymgenie.models.enums.diet.Intolerance;
-import com.genie.gymgenie.models.payload.diet.DietRequest;
-import com.genie.gymgenie.models.payload.diet.DietResponse;
+import com.genie.gymgenie.models.payload.diet.RecipeRequest;
+import com.genie.gymgenie.models.payload.diet.RecipeResponse;
 import com.genie.gymgenie.models.payload.diet.base.FoodNoun;
 import com.genie.gymgenie.models.payload.diet.recipe.RecipeDto;
 import com.genie.gymgenie.models.payload.diet.base.RecipeId;
@@ -24,9 +24,11 @@ import org.springframework.web.client.RestTemplate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static com.genie.gymgenie.genie.UserPrompts.dietPrompt;
+import static com.genie.gymgenie.genie.UserPrompts.recipesPrompt;
 import static com.genie.gymgenie.security.CurrentUser.getCurrentUserDetails;
 import static com.genie.gymgenie.security.ErrorMessages.*;
 import static com.genie.gymgenie.utils.ExceptionThrower.extractException;
@@ -36,7 +38,7 @@ import static com.genie.gymgenie.utils.JsonExtract.extractFoodNounResponseFromJS
 @Service
 @Validated
 @RequiredArgsConstructor
-public class DietService {
+public class RecipeService {
 
     private final UserRepository userRepository;
     private final WorkoutRepository workoutRepository;
@@ -47,7 +49,7 @@ public class DietService {
     private final IngredientRepository ingredientRepository;
     private final GenieAgent foodNounAgent;
     private final RestTemplate restTemplate;
-    private final GenieLogger genie = new GenieLogger(DietService.class);
+    private final GenieLogger genie = new GenieLogger(RecipeService.class);
 
     @Value("${api.spoonacular.url}")
     private String baseUrl;
@@ -55,7 +57,7 @@ public class DietService {
     @Value("${api.spoonacular.key}")
     private String apiKey;
 
-    public DietResponse generateDiet(DietRequest dietRequest, Long workoutId){
+    public RecipeResponse generateDiet(RecipeRequest recipeRequest, Long workoutId){
         User user = userRepository.findByUsername(getCurrentUserDetails().getUsername())
                 .orElseThrow(() -> {
                     genie.warn("User with username {} not found", getCurrentUserDetails().getUsername());
@@ -74,13 +76,13 @@ public class DietService {
                     throw resourceException(NO_CALORIE_INTAKE_FOUND.formatted(workoutId), HttpStatus.NOT_FOUND);
                 });
 
-        WeightOption weightOption = weightOptionRepository.findByCalorieIntakeAndName(calorieIntake, dietRequest.getWeightOptionType())
+        WeightOption weightOption = weightOptionRepository.findByCalorieIntakeAndName(calorieIntake, recipeRequest.getWeightOptionType())
                 .orElseThrow(() -> {
-                    genie.warn("WeightOption with name {} not found", dietRequest.getWeightOptionType());
-                    throw resourceException(NO_WEIGHT_OPTION_FOUND.formatted(dietRequest.getWeightOptionType()), HttpStatus.NOT_FOUND);
+                    genie.warn("WeightOption with name {} not found", recipeRequest.getWeightOptionType());
+                    throw resourceException(NO_WEIGHT_OPTION_FOUND.formatted(recipeRequest.getWeightOptionType()), HttpStatus.NOT_FOUND);
                 });
 
-        String prompt = dietPrompt(workout, weightOption, dietRequest);
+        String prompt = recipesPrompt(workout, weightOption, recipeRequest);
         String foodNounsJson = foodNounAgent.foodNouns(prompt);
         List<FoodNoun> foodNouns = extractFoodNounResponseFromJSON(foodNounsJson);
 
@@ -89,16 +91,43 @@ public class DietService {
             throw resourceException(FOOD_NOUN_PROBLEM, HttpStatus.BAD_REQUEST);
         }
 
-        List<RecipeId> recipeIds = getRecipeIds(foodNouns, dietRequest, weightOption);
-        List<RecipeDto> recipes = findAndSaveRecipes(recipeIds, workout);
+        List<RecipeId> recipeIds = getRecipeIds(foodNouns, recipeRequest, weightOption);
+        List<Recipe> recipes = findAndSaveRecipes(recipeIds, workout);
 
-        return DietResponse.builder()
-                .recipes(recipes)
+        List<RecipeDto> toReturn = mapResponse(recipes);
+
+        return RecipeResponse.builder()
+                .recipes(toReturn)
                 .build();
     }
 
-    private List<RecipeDto> findAndSaveRecipes(List<RecipeId> selectedRecipeIds, Workout workout) {
-        List<RecipeDto> recipes = new ArrayList<>();
+    private List<RecipeDto> mapResponse(List<Recipe> recipes) {
+        List<RecipeDto> toReturn = new ArrayList<>();
+        for (Recipe recipe : recipes){
+            RecipeDto recipeDto = RecipeDto.builder()
+                    .id(recipe.getId())
+                    .healthScore(recipe.getHealthScore().intValue())
+                    .title(recipe.getTitle())
+                    .readyInMinutes(recipe.getReadyInMinutes())
+                    .sourceUrl(recipe.getSourceUrl())
+                    .image(recipe.getImage())
+                    .summary(clean(recipe.getSummary()))
+                    .instructions(clean(recipe.getInstructions()))
+                    .build();
+            toReturn.add(recipeDto);
+        }
+
+        return toReturn;
+    }
+
+    private String clean(String summary) {
+        Pattern pattern = Pattern.compile("<.*?>");
+        Matcher matcher = pattern.matcher(summary);
+        return matcher.replaceAll("");
+    }
+
+    private List<Recipe> findAndSaveRecipes(List<RecipeId> selectedRecipeIds, Workout workout) {
+        List<Recipe> recipes = new ArrayList<>();
 
         for (RecipeId recipeId : selectedRecipeIds){
             genie.info("Getting recipe with id {}", recipeId.getId());
@@ -112,7 +141,6 @@ public class DietService {
                 ObjectMapper objectMapper = new ObjectMapper();
                 List<RecipeDto> recipeDtoList = objectMapper.readValue(jsonResponse, new TypeReference<>() {});
                 RecipeDto recipeDto = recipeDtoList.get(0);
-                recipes.add(recipeDto);
                 Recipe recipe = Recipe.builder()
                         .apiId(recipeId.getId())
                         .healthScore((double) recipeDto.getHealthScore())
@@ -143,6 +171,7 @@ public class DietService {
                 recipe.setAnalyzedInstructions(recipeInstructions);
                 recipe.setWorkout(workout);
                 recipeRepository.save(recipe);
+                recipes.add(recipe);
             }catch (Exception e) {
                 e.printStackTrace();
             }
@@ -213,7 +242,7 @@ public class DietService {
         return toReturn;
     }
 
-    private List<RecipeId> getRecipeIds(List<FoodNoun> foodNouns, DietRequest request, WeightOption weightOption) {
+    private List<RecipeId> getRecipeIds(List<FoodNoun> foodNouns, RecipeRequest request, WeightOption weightOption) {
         String cuisines = createCommaSeparatedString(request.getPreferredCuisines(), Cuisine::getDisplayName);
         String dislikedCuisines = createCommaSeparatedString(request.getDislikedCuisines(), Cuisine::getDisplayName);
         String intolerances = createCommaSeparatedString(request.getIntolerance(), Intolerance::getDisplayName);

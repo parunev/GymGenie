@@ -12,7 +12,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class DietResponse {
+public class RecipeResponse {
 
     List<RecipeDto> recipes;
 }
