@@ -50,8 +50,8 @@ public class RateLimitExecutor {
         if (rateLimit.oneBucket().tryConsume(1)){
             genie.info(operationDescription + " request received");
             return action.get();
-        } else if (operationDescription.equals("Workout retrieval")){
-            if (rateLimit.fiveBucket().tryConsume(1)){
+        } else if (operationDescription.equals("Workout retrieval") || operationDescription.equals("Recipe retrieval")){
+            if (rateLimit.twentyBucket().tryConsume(1)){
                 genie.info(operationDescription + " request received");
                 return action.get();
             } else {

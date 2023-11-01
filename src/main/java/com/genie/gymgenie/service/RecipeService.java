@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.genie.gymgenie.genie.GenieAgent;
+import com.genie.gymgenie.mapper.RecipeMapper;
 import com.genie.gymgenie.models.*;
 import com.genie.gymgenie.models.enums.diet.Cuisine;
 import com.genie.gymgenie.models.enums.diet.Intolerance;
@@ -16,6 +17,8 @@ import com.genie.gymgenie.repositories.*;
 import com.genie.gymgenie.security.GenieLogger;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -49,6 +52,7 @@ public class RecipeService {
     private final IngredientRepository ingredientRepository;
     private final GenieAgent foodNounAgent;
     private final RestTemplate restTemplate;
+    private final RecipeMapper recipeMapper;
     private final GenieLogger genie = new GenieLogger(RecipeService.class);
 
     @Value("${api.spoonacular.url}")
@@ -56,6 +60,33 @@ public class RecipeService {
 
     @Value("${api.spoonacular.key}")
     private String apiKey;
+
+    public RecipeDto retrieveSingleUserRecipe(Long recipeId){
+        User user = userRepository.findByUsername(getCurrentUserDetails().getUsername())
+                .orElseThrow(() -> {
+                    genie.warn("User with username {} not found", getCurrentUserDetails().getUsername());
+                    throw resourceException(NO_ACCOUNT_FOUND.formatted(getCurrentUserDetails().getUsername()), HttpStatus.NOT_FOUND);
+                });
+
+        Recipe recipe = recipeRepository.findByIdAndWorkoutUser(recipeId, user)
+                .orElseThrow(() -> {
+                    genie.warn("Recipe with id {} not found", recipeId);
+                    throw resourceException("Recipe with id(%d) not found".formatted(recipeId), HttpStatus.NOT_FOUND);
+                });
+
+        return recipeMapper.mapToRecipeDto(recipe);
+    }
+
+    public Page<RecipeDto> retrieveAllUserRecipes(Long workoutId, Double healthScoreMin, Double healthScoreMax, String recipeTitle, String recipeSummary, Pageable pageable){
+        User user = userRepository.findByUsername(getCurrentUserDetails().getUsername())
+                .orElseThrow(() -> {
+                    genie.warn("User with username {} not found", getCurrentUserDetails().getUsername());
+                    throw resourceException(NO_ACCOUNT_FOUND.formatted(getCurrentUserDetails().getUsername()), HttpStatus.NOT_FOUND);
+                });
+
+        return recipeRepository.findAllByWorkoutUser(user, workoutId, healthScoreMin, healthScoreMax, recipeTitle, recipeSummary, pageable)
+                .map(recipeMapper::mapToRecipeDto);
+    }
 
     public RecipeResponse generateDiet(RecipeRequest recipeRequest, Long workoutId){
         User user = userRepository.findByUsername(getCurrentUserDetails().getUsername())

@@ -1,11 +1,13 @@
 package com.genie.gymgenie.models.payload.diet.recipe;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Setter
 @Getter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ExtendedIngredientDto {
     private String aisle;

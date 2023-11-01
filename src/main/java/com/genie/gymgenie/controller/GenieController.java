@@ -4,6 +4,7 @@ import com.genie.gymgenie.models.enums.workout.Objective;
 import com.genie.gymgenie.models.enums.workout.WorkoutAreas;
 import com.genie.gymgenie.models.payload.diet.RecipeRequest;
 import com.genie.gymgenie.models.payload.diet.RecipeResponse;
+import com.genie.gymgenie.models.payload.diet.recipe.RecipeDto;
 import com.genie.gymgenie.models.payload.workout.WorkoutRequest;
 import com.genie.gymgenie.models.payload.workout.WorkoutResponse;
 import com.genie.gymgenie.service.RecipeService;
@@ -12,6 +13,7 @@ import com.genie.gymgenie.utils.RateLimitExecutor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -54,10 +56,32 @@ public class GenieController {
     }
 
     @PreAuthorize("hasRole('ROLE_USER')")
-    @GetMapping("/recipe/{workoutId}")
+    @PostMapping("/recipe/{workoutId}")
     public ResponseEntity<RecipeResponse> generateRecipes(@RequestBody RecipeRequest request, @PathVariable("workoutId") Long workoutId){
         return new ResponseEntity<>(
                 executor.executeGenie(() -> recipeService.generateDiet(request, workoutId),
                         "Diet generation", "to generate a diet 30 seconds"), HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasRole('ROLE_USER')")
+    @GetMapping("/recipes")
+    public ResponseEntity<Page<RecipeDto>> retrieveAllUserRecipes(
+            @RequestParam(value = "workoutId", required = false) Long workoutId,
+            @RequestParam(value = "healthScoreMin", required = false) Double healthScoreMin,
+            @RequestParam(value = "healthScoreMax", required = false) Double healthScoreMax,
+            @RequestParam(value = "recipeTitle", required = false) String recipeTitle,
+            @RequestParam(value = "recipeSummary", required = false) String recipeSummary,
+            @PageableDefault(size = 2) Pageable pageable){
+        return new ResponseEntity<>(
+                executor.executeGenie(() -> recipeService.retrieveAllUserRecipes(workoutId, healthScoreMin, healthScoreMax, recipeTitle, recipeSummary, pageable),
+                        "Recipe retrieval", "to retrieve recipes 30 seconds"), HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasRole('ROLE_USER')")
+    @GetMapping("/recipe/{recipeId}")
+    public ResponseEntity<RecipeDto> retrieveRecipeById(@PathVariable("recipeId") Long recipeId){
+        return new ResponseEntity<>(
+                executor.executeGenie(() -> recipeService.retrieveSingleUserRecipe(recipeId),
+                        "Recipe retrieval", "to retrieve a recipe 30 seconds"), HttpStatus.OK);
     }
 }
